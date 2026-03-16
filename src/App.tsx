@@ -67,8 +67,8 @@ function AppContent() {
 
   const unreadCount = notifikasiList.filter(n => !n.dibaca && (n.targetRole?.includes(userRole as any) || !n.targetRole || n.targetRole.length === 0)).length;
 
-  const onLogin = (e: React.FormEvent) => {
-    const success = handleLogin(e, loginForm, setLoginError);
+  const onLogin = async (e: React.FormEvent) => {
+    const success = await handleLogin(e, loginForm, setLoginError);
     if (success) {
       setIsLoggedIn(true);
     }

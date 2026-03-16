@@ -52,8 +52,8 @@ export const Administrative: React.FC = () => {
           <FileText size={20} />
         </div>
         <div>
-          <h2 className="text-lg font-bold text-slate-800">Layanan Administratif</h2>
-          <p className="text-[10px] text-slate-500">Ajukan surat, perizinan, atau janji temu dengan pengurus RT</p>
+          <h2 className="text-base font-bold text-slate-800">Layanan Administratif</h2>
+          <p className="text-[9px] text-slate-500">Ajukan surat, perizinan, atau janji temu dengan pengurus RT</p>
         </div>
       </div>
 
@@ -61,18 +61,18 @@ export const Administrative: React.FC = () => {
         <div className="flex border-b border-slate-100">
           <button 
             onClick={() => setAdminSubTab('buat')}
-            className={`flex-1 py-4 font-bold text-xs transition-all flex items-center justify-center gap-2 ${adminSubTab === 'buat' ? 'text-blue-900 border-b-2 border-blue-900 bg-slate-50/50' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`flex-1 py-3 font-bold text-[10px] transition-all flex items-center justify-center gap-2 ${adminSubTab === 'buat' ? 'text-blue-900 border-b-2 border-blue-900 bg-slate-50/50' : 'text-slate-400 hover:text-slate-600'}`}
           >
-            <Plus size={16} /> Buat Pengajuan
+            <Plus size={14} /> Buat Pengajuan
           </button>
           {isRT && (
             <button 
               onClick={() => setAdminSubTab('warga_submissions')}
-              className={`flex-1 py-4 font-bold text-xs transition-all flex items-center justify-center gap-2 ${adminSubTab === 'warga_submissions' ? 'text-blue-900 border-b-2 border-blue-900 bg-slate-50/50' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`flex-1 py-3 font-bold text-[10px] transition-all flex items-center justify-center gap-2 ${adminSubTab === 'warga_submissions' ? 'text-blue-900 border-b-2 border-blue-900 bg-slate-50/50' : 'text-slate-400 hover:text-slate-600'}`}
             >
-              <UsersIcon size={16} /> Pengajuan Warga
+              <UsersIcon size={14} /> Pengajuan Warga
               {adminSubmissions.filter(s => s.statusPengajuan === 'Menunggu').length > 0 && (
-                <span className="bg-red-500 text-white text-[10px] px-1.5 py-0.5 rounded-full">
+                <span className="bg-red-500 text-white text-[9px] px-1 py-0.5 rounded-full">
                   {adminSubmissions.filter(s => s.statusPengajuan === 'Menunggu').length}
                 </span>
               )}
@@ -80,57 +80,57 @@ export const Administrative: React.FC = () => {
           )}
           <button 
             onClick={() => setAdminSubTab('status')}
-            className={`flex-1 py-4 font-bold text-xs transition-all flex items-center justify-center gap-2 ${adminSubTab === 'status' ? 'text-blue-900 border-b-2 border-blue-900 bg-slate-50/50' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`flex-1 py-3 font-bold text-[10px] transition-all flex items-center justify-center gap-2 ${adminSubTab === 'status' ? 'text-blue-900 border-b-2 border-blue-900 bg-slate-50/50' : 'text-slate-400 hover:text-slate-600'}`}
           >
-            <History size={16} /> Status & Riwayat
+            <History size={14} /> Status & Riwayat
           </button>
         </div>
 
-        <div className="p-6">
+        <div className="p-4">
           {adminSubTab === 'buat' ? (
-            <form onSubmit={handleSubmitAdministrative} className="space-y-6">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                <div className="space-y-4">
+            <form onSubmit={handleSubmitAdministrative} className="space-y-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div className="space-y-3">
                   <div>
-                    <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+                    <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Nama Lengkap</label>
                     <input 
                       type="text" 
                       required
                       placeholder="Masukkan nama lengkap"
                       value={administrativeForm.nama}
                       onChange={e => setAdministrativeForm({...administrativeForm, nama: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-slate-500 uppercase mb-1">Tanggal Rencana / Event</label>
+                    <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Tanggal Rencana / Event</label>
                     <input 
                       type="date" 
                       required
                       value={administrativeForm.tanggal}
                       onChange={e => setAdministrativeForm({...administrativeForm, tanggal: e.target.value})}
-                      className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-bold text-slate-500 uppercase mb-1">Status Visibilitas Surat</label>
-                    <div className="flex gap-3">
+                    <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Status Visibilitas Surat</label>
+                    <div className="flex gap-2">
                       <button 
                         type="button"
                         onClick={() => setAdministrativeForm({...administrativeForm, statusSurat: 'Terbuka'})}
-                        className={`flex-1 py-2.5 rounded-xl border-2 flex items-center justify-center gap-2 transition-all ${administrativeForm.statusSurat === 'Terbuka' ? 'border-blue-600 bg-blue-50 text-blue-600 font-bold' : 'border-slate-100 text-slate-400'}`}
+                        className={`flex-1 py-2 rounded-xl border-2 flex items-center justify-center gap-2 transition-all ${administrativeForm.statusSurat === 'Terbuka' ? 'border-blue-600 bg-blue-50 text-blue-600 font-bold' : 'border-slate-100 text-slate-400'}`}
                       >
-                        <Eye size={16} /> Terbuka
+                        <Eye size={14} /> Terbuka
                       </button>
                       <button 
                         type="button"
                         onClick={() => setAdministrativeForm({...administrativeForm, statusSurat: 'Tertutup'})}
-                        className={`flex-1 py-2.5 rounded-xl border-2 flex items-center justify-center gap-2 transition-all ${administrativeForm.statusSurat === 'Tertutup' ? 'border-blue-600 bg-blue-50 text-blue-600 font-bold' : 'border-slate-100 text-slate-400'}`}
+                        className={`flex-1 py-2 rounded-xl border-2 flex items-center justify-center gap-2 transition-all ${administrativeForm.statusSurat === 'Tertutup' ? 'border-blue-600 bg-blue-50 text-blue-600 font-bold' : 'border-slate-100 text-slate-400'}`}
                       >
-                        <EyeOff size={16} /> Tertutup
+                        <EyeOff size={14} /> Tertutup
                       </button>
                     </div>
-                    <p className="text-xs text-slate-400 mt-2 italic">
+                    <p className="text-[9px] text-slate-400 mt-1 italic">
                       {administrativeForm.statusSurat === 'Terbuka' 
                         ? '*Surat dapat dilihat oleh warga lain di tab Status.' 
                         : '*Surat hanya dapat dilihat oleh Anda dan Pengurus RT.'}
@@ -139,20 +139,20 @@ export const Administrative: React.FC = () => {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-bold text-slate-500 uppercase mb-1">Berita Acara / Perihal Pengajuan</label>
+                  <label className="block text-[9px] font-bold text-slate-500 uppercase mb-1">Berita Acara / Perihal Pengajuan</label>
                   <textarea 
                     required
                     placeholder="Jelaskan detail pengajuan Anda (misal: Izin tenda hajatan, Janji temu RT, dll)"
                     value={administrativeForm.beritaAcara}
                     onChange={e => setAdministrativeForm({...administrativeForm, beritaAcara: e.target.value})}
-                    className="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-base focus:ring-2 focus:ring-blue-500 focus:outline-none h-[210px] resize-none"
+                    className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none h-[180px] resize-none"
                   ></textarea>
                 </div>
               </div>
 
-              <div className="pt-4 border-t border-slate-100">
-                <button type="submit" className="w-full bg-blue-900 text-white py-3.5 rounded-xl font-bold hover:bg-blue-800 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20">
-                  <Send size={18} /> Kirim Pengajuan Administratif
+              <div className="pt-3 border-t border-slate-100">
+                <button type="submit" className="w-full bg-blue-900 text-white py-2.5 rounded-xl font-bold hover:bg-blue-800 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 text-sm">
+                  <Send size={16} /> Kirim Pengajuan Administratif
                 </button>
               </div>
             </form>

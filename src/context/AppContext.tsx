@@ -144,7 +144,7 @@ interface AppContextType {
   // Actions
   addNotification: (pesan: string, tipe?: 'info' | 'success' | 'warning', roles?: UserRole[]) => void;
   markNotificationsAsRead: () => void;
-  handleLogin: (e: React.FormEvent, loginForm: { user: string, pass: string }, setLoginError: (err: string) => void) => boolean;
+  handleLogin: (e: React.FormEvent, loginForm: { user: string, pass: string }, setLoginError: (err: string) => void) => Promise<boolean>;
   handleLogout: () => void;
 }
 

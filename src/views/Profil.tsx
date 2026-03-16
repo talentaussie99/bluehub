@@ -86,12 +86,12 @@ export const Profil: React.FC = () => {
           {isEditing ? (
             <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-1 ml-1">Nama Lengkap</label>
+                <label className="block text-[10px] font-bold text-slate-700 uppercase tracking-wider mb-1 ml-1">Nama Lengkap</label>
                 <input 
                   type="text"
                   value={editForm.nama}
                   onChange={e => setEditForm({...editForm, nama: e.target.value})}
-                  className="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold"
+                  className="w-full px-4 py-2 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none font-semibold"
                   placeholder="Masukkan nama lengkap"
                   required
                 />
