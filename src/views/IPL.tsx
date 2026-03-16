@@ -23,6 +23,8 @@ export const IPL: React.FC = () => {
     paymentForm 
   } = useAppContext();
 
+  const filteredWargaList = userRole === 'warga' ? wargaList.filter(w => w.id === currentUser?.id) : wargaList;
+
   return (
     <motion.div 
       key="ipl" 
@@ -56,7 +58,7 @@ export const IPL: React.FC = () => {
             </select>
             <button 
               onClick={() => {
-                const data = wargaList.map(w => [
+                const data = filteredWargaList.map(w => [
                   w.nama,
                   ...MONTHS.map((_, idx) => {
                     const payment = payments.find(p => p.wargaId === w.id && p.bulan === idx && p.tipe === 'IPL' && p.tahun === 2024);
@@ -86,7 +88,7 @@ export const IPL: React.FC = () => {
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100 text-sm">
-              {wargaList.map(w => (
+              {filteredWargaList.map(w => (
                 <tr key={w.id} className="hover:bg-slate-50 transition-colors">
                   <td className="px-3 py-2 sticky left-0 bg-white z-10 border-r border-slate-100">
                     <div className="font-bold">{w.nama}</div>

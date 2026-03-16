@@ -787,14 +787,6 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setLoginError('');
       return true;
     } else {
-      // Special case for admin fallback
-      if (loginForm.user === 'admin' && loginForm.pass === 'admin') {
-        setUserRole('admin');
-        setCurrentUser({ nama: 'Administrator', role: 'admin' });
-        setLoginError('');
-        return true;
-      }
-      
       setLoginError('Username atau Password salah!');
       return false;
     }
