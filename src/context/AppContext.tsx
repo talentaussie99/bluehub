@@ -163,8 +163,24 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const fetchData = async () => {
       const { data: profiles } = await supabase.from('profiles').select('*');
       if (profiles) {
-        setWargaList(profiles.filter(p => p.role === 'warga'));
-        setSecurityList(profiles.filter(p => p.role === 'security'));
+        setWargaList(profiles.filter(p => p.role === 'warga').map(p => ({
+          id: p.id,
+          nama: p.nama,
+          noRumah: p.no_rumah,
+          noWA: p.no_wa,
+          status: p.status,
+          peran: p.peran,
+          kodeAkses: p.kode_akses,
+          foto: p.foto
+        })));
+        setSecurityList(profiles.filter(p => p.role === 'security').map(p => ({
+          id: p.id,
+          nama: p.nama,
+          noTelp: p.no_wa,
+          shift: p.shift,
+          status: p.status,
+          foto: p.foto
+        })));
       }
 
       const { data: p } = await supabase.from('payments').select('*').order('created_at', { ascending: false });
@@ -235,7 +251,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [replyContent, setReplyContent] = useState('');
 
   const [editingWarga, setEditingWarga] = useState<Warga | null>(null);
-  const [wargaForm, setWargaForm] = useState<any>({ status: 'Aktif' });
+  const [wargaForm, setWargaForm] = useState<any>({ 
+    nama: '',
+    noRumah: '',
+    noWA: '',
+    status: 'Aktif',
+    peran: 'Warga Biasa',
+    kodeAkses: '',
+    foto: ''
+  });
   const [showWargaModal, setShowWargaModal] = useState(false);
 
   const [activeLaporanId, setActiveLaporanId] = useState<string | null>(null);
@@ -402,29 +426,60 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
 
   const handleSaveWarga = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log('Saving warga:', wargaForm);
+
+    const profileData = {
+      nama: wargaForm.nama || '',
+      role: 'warga',
+      peran: wargaForm.peran || 'Warga Biasa',
+      no_rumah: wargaForm.noRumah || '',
+      no_wa: wargaForm.noWA || '',
+      status: wargaForm.status || 'Aktif',
+      kode_akses: wargaForm.kodeAkses || '',
+      foto: wargaForm.foto || null
+    };
+
     if (editingWarga) {
-      const { error } = await supabase.from('profiles').update(wargaForm).eq('id', editingWarga.id);
+      const { error } = await supabase.from('profiles').update(profileData).eq('id', editingWarga.id);
       if (!error) {
         setWargaList(wargaList.map(w => w.id === editingWarga.id ? { ...w, ...wargaForm } as Warga : w));
         addNotification('Data warga berhasil diperbarui', 'success', ['admin']);
+      } else {
+        console.error('Error updating warga:', error);
+        addNotification('Gagal memperbarui data warga', 'warning');
       }
     } else {
       const kodeAkses = wargaForm.kodeAkses || `${wargaForm.nama.split(' ')[0].toLowerCase()}.${wargaForm.noRumah.toLowerCase()}`;
       const newWarga = {
-        ...wargaForm,
-        role: 'warga',
-        kode_akses: kodeAkses
+        ...profileData,
+        kode_akses: kodeAkses,
+        created_at: new Date().toISOString()
       };
       
+      console.log('Inserting new warga:', newWarga);
       const { data, error } = await supabase.from('profiles').insert([newWarga]).select();
       if (data) {
-        setWargaList([...wargaList, data[0]]);
+        console.log('Insert successful:', data);
+        setWargaList([...wargaList, { ...data[0], id: data[0].id, nama: data[0].nama, noRumah: data[0].no_rumah, noWA: data[0].no_wa, status: data[0].status, peran: data[0].peran, kodeAkses: data[0].kode_akses, foto: data[0].foto } as Warga]);
         addNotification(`Warga baru berhasil ditambahkan. Kode Akses: ${kodeAkses}`, 'success', ['admin']);
+      } else {
+        console.error('Error inserting warga:', error);
+        console.error('Full error object:', JSON.stringify(error, null, 2));
+        addNotification(`Gagal menambahkan warga: ${error?.message || 'Unknown error'}`, 'warning');
       }
     }
     setShowWargaModal(false);
     setEditingWarga(null);
-    setWargaForm({ status: 'Aktif' });
+    setWargaForm({ 
+      nama: '',
+      noRumah: '',
+      noWA: '',
+      status: 'Aktif',
+      peran: 'Warga Biasa',
+      kodeAkses: '',
+      foto: ''
+    });
   };
 
   const handleSubmitPayment = async (e: React.FormEvent) => {

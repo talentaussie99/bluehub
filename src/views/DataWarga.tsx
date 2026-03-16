@@ -27,7 +27,15 @@ export const DataWarga: React.FC = () => {
           <button 
             onClick={() => {
               setEditingWarga(null);
-              setWargaForm({ status: 'Aktif' });
+              setWargaForm({ 
+                nama: '',
+                noRumah: '',
+                noWA: '',
+                status: 'Aktif',
+                peran: 'Warga Biasa',
+                kodeAkses: '',
+                foto: ''
+              });
               setShowWargaModal(true);
             }}
             className="w-full sm:w-auto bg-blue-900 text-white px-3 py-1.5 rounded-lg flex items-center justify-center gap-1.5 hover:bg-blue-800 transition-all text-xs font-bold"

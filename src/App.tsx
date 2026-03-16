@@ -121,13 +121,6 @@ function AppContent() {
           </form>
 
           <div className="mt-5 pt-3 border-t border-slate-100 text-center">
-            <p className="text-[9px] text-slate-400 font-medium mb-2 uppercase tracking-widest">Login Cepat (Demo)</p>
-            <div className="flex flex-wrap justify-center gap-1.5">
-              <button onClick={() => setLoginForm({user: 'admin', pass: 'admin'})} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-md text-[8px] font-bold text-slate-600 transition-colors">ADMIN</button>
-              <button onClick={() => setLoginForm({user: 'rt', pass: 'rt'})} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-md text-[8px] font-bold text-slate-600 transition-colors">RT</button>
-              <button onClick={() => setLoginForm({user: 'warga', pass: 'warga'})} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-md text-[8px] font-bold text-slate-600 transition-colors">WARGA</button>
-              <button onClick={() => setLoginForm({user: 'security', pass: 'security'})} className="px-2.5 py-1 bg-slate-100 hover:bg-slate-200 rounded-md text-[8px] font-bold text-slate-600 transition-colors">SECURITY</button>
-            </div>
           </div>
         </motion.div>
       </div>
