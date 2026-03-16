@@ -768,15 +768,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const handleLogin = async (e: React.FormEvent, loginForm: { user: string, pass: string }, setLoginError: (err: string) => void) => {
     e.preventDefault();
     
-    // Special case for admin/admin if not in DB yet or as a fallback
-    if (loginForm.user === 'admin' && loginForm.pass === 'admin') {
-      const { data: adminProfile } = await supabase.from('profiles').select('*').eq('kode_akses', 'admin').single();
-      if (adminProfile) {
-        setUserRole('admin');
-        setCurrentUser(adminProfile);
-        setLoginError('');
-        return true;
-      }
+    if (!loginForm.user || !loginForm.pass) {
+      setLoginError('Username dan Password harus diisi!');
+      return false;
     }
 
     // Check Supabase profiles
@@ -784,21 +778,23 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       .from('profiles')
       .select('*')
       .eq('kode_akses', loginForm.pass)
-      .ilike('nama', `%${loginForm.user}%`)
+      .ilike('nama', loginForm.user)
       .single();
 
-    if (profile) {
+    if (profile && !error) {
       setUserRole(profile.role);
       setCurrentUser(profile);
       setLoginError('');
       return true;
     } else {
-      // Fallback for demo roles if DB is empty
+      // Special case for admin fallback
       if (loginForm.user === 'admin' && loginForm.pass === 'admin') {
         setUserRole('admin');
         setCurrentUser({ nama: 'Administrator', role: 'admin' });
+        setLoginError('');
         return true;
       }
+      
       setLoginError('Username atau Password salah!');
       return false;
     }

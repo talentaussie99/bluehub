@@ -81,48 +81,51 @@ function AppContent() {
 
   if (!isLoggedIn) {
     return (
-      <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4 font-sans">
+      <div 
+        className="min-h-screen w-screen flex items-center justify-center p-4 font-sans overflow-hidden bg-cover bg-center"
+        style={{ backgroundImage: 'url(https://imgur.com/8mgT1TD.jpg)' }}
+      >
         <motion.div 
-          initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}
-          className="bg-white p-5 rounded-2xl shadow-xl w-full max-w-sm border border-slate-100"
+          initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+          className="backdrop-blur-xl bg-white/10 border border-white/20 p-8 rounded-3xl shadow-2xl w-full max-w-sm"
         >
-          <div className="text-center mb-5">
-            <div className="w-10 h-10 bg-blue-900 rounded-xl flex items-center justify-center mx-auto mb-2 shadow-lg shadow-blue-900/20">
-              <Shield className="text-white" size={20} />
+          <div className="text-center mb-8">
+            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+              <Shield className="text-white" size={32} />
             </div>
-            <h1 className="text-xl font-black text-slate-800 tracking-tight">Blue Oasis Hub</h1>
-            <p className="text-slate-500 text-xs mt-0.5">Sistem Manajemen Warga Digital</p>
+            <h1 className="text-2xl font-black text-white tracking-tight">Blue Oasis Hub</h1>
+            <p className="text-white/70 text-xs mt-1 uppercase tracking-widest">Sistem Manajemen Warga Digital</p>
           </div>
 
-          <form onSubmit={onLogin} className="space-y-3">
+          <form onSubmit={onLogin} className="space-y-4">
             <div>
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1">Username</label>
+              <label className="block text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1 ml-1">Username</label>
               <input 
                 type="text" 
                 value={loginForm.user} 
                 onChange={e => setLoginForm({...loginForm, user: e.target.value})}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-slate-700 text-sm" 
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all outline-none text-white placeholder-white/30 text-sm" 
                 placeholder="Masukkan username"
               />
             </div>
             <div>
-              <label className="block text-[11px] font-bold text-slate-400 uppercase tracking-widest mb-1 ml-1">Password</label>
+              <label className="block text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1 ml-1">Password</label>
               <input 
                 type="password" 
                 value={loginForm.pass} 
                 onChange={e => setLoginForm({...loginForm, pass: e.target.value})}
-                className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none text-slate-700 text-sm" 
+                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all outline-none text-white placeholder-white/30 text-sm" 
                 placeholder="Masukkan password"
               />
             </div>
-            {loginError && <p className="text-red-500 text-[11px] font-bold text-center bg-red-50 py-1.5 rounded-md border border-red-100">{loginError}</p>}
-            <button type="submit" className="w-full bg-blue-900 text-white py-2.5 rounded-lg font-bold text-sm hover:bg-blue-800 transition-all shadow-lg shadow-blue-900/20 active:scale-[0.98]">
+            {loginError && <p className="text-red-300 text-[11px] font-bold text-center bg-red-900/50 py-2 rounded-lg border border-red-500/30">{loginError}</p>}
+            <button type="submit" className="w-full bg-white text-blue-900 py-3.5 rounded-xl font-bold text-sm hover:bg-blue-50 transition-all shadow-lg active:scale-[0.98]">
               Masuk ke Dashboard
             </button>
+            <p className="text-center text-white/60 text-[10px] mt-4">
+              Lupa password? hubungi Admin
+            </p>
           </form>
-
-          <div className="mt-5 pt-3 border-t border-slate-100 text-center">
-          </div>
         </motion.div>
       </div>
     );
