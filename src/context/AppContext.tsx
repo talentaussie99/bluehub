@@ -137,6 +137,7 @@ interface AppContextType {
   
   // Actions
   addNotification: (pesan: string, tipe?: 'info' | 'success' | 'warning', roles?: UserRole[]) => void;
+  markNotificationsAsRead: () => void;
   handleLogin: (e: React.FormEvent, loginForm: { user: string, pass: string }, setLoginError: (err: string) => void) => boolean;
   handleLogout: () => void;
 }
@@ -754,6 +755,16 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const markNotificationsAsRead = async () => {
+    const unreadNotifs = notifikasiList.filter(n => !n.dibaca);
+    if (unreadNotifs.length === 0) return;
+
+    const { error } = await supabase.from('notifikasi').update({ dibaca: true }).in('id', unreadNotifs.map(n => n.id));
+    if (!error) {
+      setNotifikasiList(prev => prev.map(n => ({ ...n, dibaca: true })));
+    }
+  };
+
   const handleLogin = async (e: React.FormEvent, loginForm: { user: string, pass: string }, setLoginError: (err: string) => void) => {
     e.preventDefault();
     
@@ -857,7 +868,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       handleUpdateProfile,
       laporanWargaTab, setLaporanWargaTab,
       saldoKas, iplProgress, verificationQueue, pendingLaporan,
-      addNotification, handleLogin, handleLogout
+      addNotification, markNotificationsAsRead, handleLogin, handleLogout
     }}>
       {children}
     </AppContext.Provider>

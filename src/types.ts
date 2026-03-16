@@ -103,6 +103,7 @@ export interface Notifikasi {
   dibaca: boolean;
   tipe: 'info' | 'success' | 'warning';
   targetRole?: UserRole[];
+  targetUserId?: string;
 }
 
 export interface AdminSettings {

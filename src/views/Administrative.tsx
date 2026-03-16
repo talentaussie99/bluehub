@@ -52,8 +52,8 @@ export const Administrative: React.FC = () => {
           <FileText size={20} />
         </div>
         <div>
-          <h2 className="text-2xl font-bold text-slate-800">Layanan Administratif</h2>
-          <p className="text-sm text-slate-500">Ajukan surat, perizinan, atau janji temu dengan pengurus RT</p>
+          <h2 className="text-xl font-bold text-slate-800">Layanan Administratif</h2>
+          <p className="text-xs text-slate-500">Ajukan surat, perizinan, atau janji temu dengan pengurus RT</p>
         </div>
       </div>
 
@@ -61,14 +61,14 @@ export const Administrative: React.FC = () => {
         <div className="flex border-b border-slate-100">
           <button 
             onClick={() => setAdminSubTab('buat')}
-            className={`flex-1 py-4 font-bold text-base transition-all flex items-center justify-center gap-2 ${adminSubTab === 'buat' ? 'text-blue-900 border-b-2 border-blue-900 bg-slate-50/50' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`flex-1 py-4 font-bold text-sm transition-all flex items-center justify-center gap-2 ${adminSubTab === 'buat' ? 'text-blue-900 border-b-2 border-blue-900 bg-slate-50/50' : 'text-slate-400 hover:text-slate-600'}`}
           >
             <Plus size={18} /> Buat Pengajuan
           </button>
           {isRT && (
             <button 
               onClick={() => setAdminSubTab('warga_submissions')}
-              className={`flex-1 py-4 font-bold text-base transition-all flex items-center justify-center gap-2 ${adminSubTab === 'warga_submissions' ? 'text-blue-900 border-b-2 border-blue-900 bg-slate-50/50' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`flex-1 py-4 font-bold text-sm transition-all flex items-center justify-center gap-2 ${adminSubTab === 'warga_submissions' ? 'text-blue-900 border-b-2 border-blue-900 bg-slate-50/50' : 'text-slate-400 hover:text-slate-600'}`}
             >
               <UsersIcon size={18} /> Pengajuan Warga
               {adminSubmissions.filter(s => s.statusPengajuan === 'Menunggu').length > 0 && (
@@ -80,7 +80,7 @@ export const Administrative: React.FC = () => {
           )}
           <button 
             onClick={() => setAdminSubTab('status')}
-            className={`flex-1 py-4 font-bold text-base transition-all flex items-center justify-center gap-2 ${adminSubTab === 'status' ? 'text-blue-900 border-b-2 border-blue-900 bg-slate-50/50' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`flex-1 py-4 font-bold text-sm transition-all flex items-center justify-center gap-2 ${adminSubTab === 'status' ? 'text-blue-900 border-b-2 border-blue-900 bg-slate-50/50' : 'text-slate-400 hover:text-slate-600'}`}
           >
             <History size={18} /> Status & Riwayat
           </button>
@@ -92,7 +92,7 @@ export const Administrative: React.FC = () => {
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-bold text-slate-500 uppercase mb-1">Nama Lengkap</label>
+                    <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Nama Lengkap</label>
                     <input 
                       type="text" 
                       required

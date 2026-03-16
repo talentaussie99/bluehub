@@ -74,11 +74,11 @@ export const Lapor: React.FC = () => {
               <div className="flex gap-4">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="radio" name="tujuan" value="RT" checked={laporanForm.tujuan === 'RT'} onChange={() => setLaporanForm({...laporanForm, tujuan: 'RT'})} className="text-blue-600 focus:ring-blue-500" />
-                  <span className="text-base text-slate-700">Pengurus RT</span>
+                  <span className="text-sm text-slate-700">Pengurus RT</span>
                 </label>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="radio" name="tujuan" value="Security" checked={laporanForm.tujuan === 'Security'} onChange={() => setLaporanForm({...laporanForm, tujuan: 'Security'})} className="text-red-500 focus:ring-red-500" />
-                  <span className="text-base text-slate-700 font-bold">Security (Darurat)</span>
+                  <span className="text-sm text-slate-700 font-bold">Security (Darurat)</span>
                 </label>
               </div>
             </div>

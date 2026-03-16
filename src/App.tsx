@@ -52,6 +52,7 @@ function AppContent() {
     activeMenu, 
     setActiveMenu, 
     notifikasiList, 
+    markNotificationsAsRead,
     verificationQueue, 
     pendingLaporan,
     handleLogin,
@@ -64,7 +65,7 @@ function AppContent() {
   const [showNotifications, setShowNotifications] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
-  const unreadCount = notifikasiList.filter(n => !n.dibaca).length;
+  const unreadCount = notifikasiList.filter(n => !n.dibaca && (n.targetRole?.includes(userRole as any) || !n.targetRole || n.targetRole.length === 0)).length;
 
   const onLogin = (e: React.FormEvent) => {
     const success = handleLogin(e, loginForm, setLoginError);
@@ -259,7 +260,10 @@ function AppContent() {
             <div className="flex items-center gap-3">
               <div className="relative">
                 <button 
-                  onClick={() => setShowNotifications(!showNotifications)}
+                  onClick={() => {
+                    setShowNotifications(!showNotifications);
+                    if (!showNotifications) markNotificationsAsRead();
+                  }}
                   className="p-1.5 bg-slate-50 text-slate-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all relative"
                 >
                   <Bell size={16} />
@@ -279,7 +283,7 @@ function AppContent() {
                         <span className="text-[8px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full font-bold">{unreadCount} Baru</span>
                       </div>
                       <div className="max-h-56 overflow-y-auto">
-                        {notifikasiList.length > 0 ? notifikasiList.map(notif => (
+                        {notifikasiList.filter(n => n.targetRole?.includes(userRole as any) || !n.targetRole || n.targetRole.length === 0).length > 0 ? notifikasiList.filter(n => n.targetRole?.includes(userRole as any) || !n.targetRole || n.targetRole.length === 0).map(notif => (
                           <div key={notif.id} className={`p-2.5 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer ${!notif.dibaca ? 'bg-blue-50/30' : ''}`}>
                             <p className="text-[10px] text-slate-700 mb-0.5 leading-relaxed">{notif.pesan}</p>
                             <span className="text-[8px] text-slate-400 font-medium">{notif.waktu}</span>
