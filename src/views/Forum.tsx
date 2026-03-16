@@ -32,7 +32,8 @@ export const Forum: React.FC = () => {
     setReplyContent,
     handleSubmitForum,
     handleSubmitReply,
-    handleVote
+    handleVote,
+    currentUser
   } = useAppContext();
 
   return (
@@ -154,7 +155,7 @@ export const Forum: React.FC = () => {
                         {post.poll.options.map(opt => {
                           const totalVotes = post.poll!.options.reduce((sum, o) => sum + o.votes, 0);
                           const percent = totalVotes === 0 ? 0 : Math.round((opt.votes / totalVotes) * 100);
-                          const hasVoted = post.poll!.votedBy.includes('currentUser');
+                          const hasVoted = post.poll!.votedBy.includes(currentUser?.id || '');
                           return (
                             <div key={opt.id} className="relative">
                               <button 

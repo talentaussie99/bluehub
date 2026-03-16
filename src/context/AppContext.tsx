@@ -41,6 +41,12 @@ interface AppContextType {
   setSecurityList: React.Dispatch<React.SetStateAction<Security[]>>;
   absensiSecurity: AbsensiSecurity[];
   setAbsensiSecurity: React.Dispatch<React.SetStateAction<AbsensiSecurity[]>>;
+  showSecurityModal: boolean;
+  setShowSecurityModal: (show: boolean) => void;
+  editingSecurity: Security | null;
+  setEditingSecurity: (sec: Security | null) => void;
+  securityForm: any;
+  setSecurityForm: (form: any) => void;
   
   // Modal states
   showPaymentModal: boolean;
@@ -158,6 +164,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [notifikasiList, setNotifikasiList] = useState<Notifikasi[]>([]);
   const [securityList, setSecurityList] = useState<Security[]>([]);
   const [absensiSecurity, setAbsensiSecurity] = useState<AbsensiSecurity[]>([]);
+  const [showSecurityModal, setShowSecurityModal] = useState(false);
+  const [editingSecurity, setEditingSecurity] = useState<Security | null>(null);
+  const [securityForm, setSecurityForm] = useState<any>({});
 
   // Fetch data from Supabase on mount
   useEffect(() => {
@@ -812,6 +821,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       notifikasiList, setNotifikasiList,
       securityList, setSecurityList,
       absensiSecurity, setAbsensiSecurity,
+      showSecurityModal, setShowSecurityModal,
+      editingSecurity, setEditingSecurity,
+      securityForm, setSecurityForm,
       showPaymentModal, setShowPaymentModal,
       paymentType, setPaymentType,
       paymentForm, setPaymentForm,

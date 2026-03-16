@@ -20,7 +20,8 @@ export const IPL: React.FC = () => {
     setShowPaymentModal, 
     setPaymentType, 
     setPaymentForm, 
-    paymentForm 
+    paymentForm,
+    currentUser
   } = useAppContext();
 
   const filteredWargaList = userRole === 'warga' ? wargaList.filter(w => w.id === currentUser?.id) : wargaList;
