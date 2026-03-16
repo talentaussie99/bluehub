@@ -133,7 +133,7 @@ function AppContent() {
 
   return (
     <div className="h-screen bg-slate-200 flex justify-center font-sans text-slate-700 overflow-hidden">
-      <div className="w-full max-w-[1200px] bg-white shadow-2xl flex overflow-hidden h-full lg:border-x border-slate-300 relative">
+      <div className="w-full max-w-[1280px] bg-white shadow-2xl flex overflow-hidden h-full lg:border-x border-slate-300 relative">
         {/* Sidebar Overlay for Mobile */}
         <AnimatePresence>
           {isSidebarOpen && (

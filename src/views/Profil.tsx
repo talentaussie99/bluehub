@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import { motion } from 'motion/react';
-import { Edit2, Camera, Save, X, User } from 'lucide-react';
+import { Camera, User } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 export const Profil: React.FC = () => {
@@ -74,9 +74,9 @@ export const Profil: React.FC = () => {
             {!isEditing && (
               <button 
                 onClick={() => setIsEditing(true)}
-                className="mb-2 p-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white rounded-lg transition-all border border-white/20"
+                className="mb-2 px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white rounded-lg transition-all border border-white/20 font-bold text-xs"
               >
-                <Edit2 size={16} />
+                Edit Profil
               </button>
             )}
           </div>
@@ -99,9 +99,9 @@ export const Profil: React.FC = () => {
               <div className="flex gap-2 pt-2">
                 <button 
                   type="submit"
-                  className="flex-1 bg-blue-900 text-white py-2.5 rounded-xl font-bold text-sm flex items-center justify-center gap-2 hover:bg-blue-800 transition-all shadow-lg shadow-blue-900/20"
+                  className="flex-1 bg-blue-900 text-white py-2.5 rounded-xl font-bold text-sm hover:bg-blue-800 transition-all shadow-lg shadow-blue-900/20"
                 >
-                  <Save size={18} /> Simpan Perubahan
+                  Simpan Perubahan
                 </button>
                 <button 
                   type="button"
@@ -111,7 +111,7 @@ export const Profil: React.FC = () => {
                   }}
                   className="px-4 bg-slate-100 text-slate-500 py-2.5 rounded-xl font-bold text-sm hover:bg-slate-200 transition-all"
                 >
-                  <X size={18} />
+                  Batal
                 </button>
               </div>
             </form>
