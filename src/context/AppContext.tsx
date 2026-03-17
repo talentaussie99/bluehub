@@ -153,7 +153,7 @@ interface AppContextType {
   pendingLaporan: Laporan[];
   
   // Actions
-  addNotification: (pesan: string, tipe?: 'info' | 'success' | 'warning', roles?: UserRole[]) => void;
+  addNotification: (pesan: string, tipe?: 'info' | 'success' | 'warning', roles?: UserRole[], excludeUserId?: string, targetUserId?: string) => void;
   markNotificationsAsRead: () => void;
   handleLogin: (e: React.FormEvent, loginForm: { user: string, pass: string }, setLoginError: (err: string) => void) => Promise<boolean>;
   handleLogout: () => void;
@@ -272,24 +272,37 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const { data: subs } = await supabase.from('admin_submissions').select('*').order('created_at', { ascending: false });
     if (subs) setAdminSubmissions(subs);
 
-    const { data: bBills } = await supabase.from('bonus_bills').select('*').order('tanggal_dibuat', { ascending: false });
-    if (bBills) {
-      const today = new Date().toISOString().split('T')[0];
-      const activeBills = bBills.filter(b => {
-        const start = b.tanggal_mulai;
-        const end = b.tanggal_selesai;
-        if (start && today < start) return false;
-        if (end && today > end) return false;
-        return true;
-      }).map(b => ({
-        id: b.id,
-        keterangan: b.keterangan,
-        nominal: b.nominal,
-        tanggalMulai: b.tanggal_mulai,
-        tanggalSelesai: b.tanggal_selesai,
-        tanggalDibuat: b.tanggal_dibuat
-      }));
-      setBonusBills(activeBills);
+    // Fetch bonus bills with fallback for missing columns
+    try {
+      const { data: bBills, error: bError } = await supabase.from('bonus_bills').select('*');
+      
+      if (bError) {
+        console.warn('Error fetching bonus_bills, table might be missing or columns incomplete:', bError);
+      } else if (bBills) {
+        const today = new Date().toISOString().split('T')[0];
+        const activeBills = bBills.filter(b => {
+          // Fallback if columns are missing
+          const start = b.tanggal_mulai;
+          const end = b.tanggal_selesai;
+          if (start && today < start) return false;
+          if (end && today > end) return false;
+          return true;
+        }).map(b => ({
+          id: b.id,
+          keterangan: b.keterangan || 'Tanpa Keterangan',
+          nominal: b.nominal,
+          tanggalMulai: b.tanggal_mulai || '',
+          tanggalSelesai: b.tanggal_selesai || '',
+          tanggalDibuat: b.tanggal_dibuat || today
+        }));
+        
+        // Sort manually if order by failed or to ensure consistency
+        activeBills.sort((a, b) => b.tanggalDibuat.localeCompare(a.tanggalDibuat));
+        
+        setBonusBills(activeBills);
+      }
+    } catch (err) {
+      console.error('Unexpected error in bonus_bills fetch:', err);
     }
 
     const { data: settings } = await supabase.from('settings').select('*');
@@ -342,7 +355,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   });
 
   const [userSettings, setUserSettings] = useState<UserSettings>({
-    notifications: { events: true, billing: true, forumPosts: true, forumComments: true, laporanWarga: true }
+    notifications: { events: true, billing: true, forumPosts: true, forumComments: true, laporanWarga: true },
+    readNotifications: []
   });
 
   const [adminSubmissions, setAdminSubmissions] = useState<AdministrativeSubmission[]>([
@@ -373,7 +387,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const { data, error } = await supabase.from('admin_submissions').insert([newSub]).select();
     if (data) {
       setAdminSubmissions([data[0], ...adminSubmissions]);
-      addNotification(`Pengajuan administratif baru: ${administrativeForm.beritaAcara}`, 'info', ['admin']);
+      addNotification(`Pengajuan administratif baru: ${administrativeForm.beritaAcara}`, 'info', ['admin'], currentUser?.id);
       setAdministrativeForm({
         nama: currentUser?.nama || '',
         beritaAcara: '',
@@ -393,7 +407,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           addNotification(
             `Pengajuan administratif Anda "${sub.berita_acara}" telah ${status.toLowerCase()}`,
             status === 'Disetujui' ? 'success' : 'warning',
-            ['warga']
+            ['admin'],
+            currentUser?.id
           );
           return updatedSub;
         }
@@ -405,31 +420,49 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const handleSaveBonusBill = async (e: React.FormEvent) => {
     e.preventDefault();
     try {
+      // Validate nominal
+      let nominalValue = null;
+      if (bonusForm.nominal && bonusForm.nominal.trim() !== '') {
+        nominalValue = parseInt(bonusForm.nominal);
+        if (isNaN(nominalValue)) {
+          alert('Nominal harus berupa angka');
+          return;
+        }
+      }
+
       const billData = {
         keterangan: bonusForm.keterangan,
-        nominal: bonusForm.nominal ? parseInt(bonusForm.nominal) : null,
+        nominal: nominalValue,
         tanggal_mulai: bonusForm.tanggalMulai || null,
         tanggal_selesai: bonusForm.tanggalSelesai || null,
         tanggal_dibuat: new Date().toISOString().split('T')[0]
       };
 
+      console.log('Saving bonus bill:', billData);
+
       if (editingBonus && bonusForm.id) {
         const { error } = await supabase.from('bonus_bills').update(billData).eq('id', bonusForm.id);
-        if (error) throw error;
-        addNotification(`Tagihan ${bonusForm.keterangan} berhasil diupdate`, 'success', ['admin']);
+        if (error) {
+          console.error('Supabase update error:', error);
+          throw new Error(error.message);
+        }
+        await addNotification(`Tagihan ${bonusForm.keterangan} berhasil diupdate`, 'success', ['admin'], currentUser?.id);
       } else {
         const { error } = await supabase.from('bonus_bills').insert([billData]);
-        if (error) throw error;
-        addNotification(`Tagihan ${bonusForm.keterangan} berhasil dibuat`, 'success', ['admin']);
+        if (error) {
+          console.error('Supabase insert error:', error);
+          throw new Error(error.message);
+        }
+        await addNotification(`Tagihan iuran baru: ${bonusForm.keterangan}`, 'info', ['admin', 'warga'], currentUser?.id);
       }
 
       setShowBonusModal(false);
       setBonusForm({ id: '', keterangan: '', nominal: '', tanggalMulai: '', tanggalSelesai: '' });
       setEditingBonus(false);
-      fetchData();
-    } catch (error) {
+      await fetchData();
+    } catch (error: any) {
       console.error('Error saving bonus bill:', error);
-      alert('Gagal menyimpan tagihan.');
+      alert(`Gagal menyimpan tagihan: ${error.message || 'Terjadi kesalahan pada server'}`);
     }
   };
 
@@ -438,7 +471,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     try {
       const { error } = await supabase.from('bonus_bills').delete().eq('id', id);
       if (error) throw error;
-      addNotification('Tagihan berhasil dihapus', 'success', ['admin']);
+      addNotification('Tagihan berhasil dihapus', 'success', ['admin'], currentUser?.id);
       fetchData();
     } catch (error) {
       console.error('Error deleting bonus bill:', error);
@@ -478,7 +511,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         setSecurityList(prev => prev.map(s => s.id === currentUser.id ? { ...s, nama, foto } : s));
       }
       
-      addNotification('Profil Anda berhasil diperbarui', 'success');
+      addNotification('Profil Anda berhasil diperbarui', 'success', undefined, currentUser?.id);
     }
   };
 
@@ -515,7 +548,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const { data, error } = await supabase.from('laporan').insert([newLaporan]).select();
     if (data) {
       setLaporanList([data[0], ...laporanList]);
-      addNotification(`Laporan baru dari ${laporanForm.isAnonim ? 'Anonim' : laporanForm.nama} (${laporanForm.tujuan})`, 'warning', ['admin', laporanForm.tujuan === 'Security' ? 'security' : 'warga']);
+      addNotification(`Laporan baru dari ${laporanForm.isAnonim ? 'Anonim' : laporanForm.nama} (${laporanForm.tujuan})`, 'warning', ['admin', laporanForm.tujuan === 'Security' ? 'security' : 'warga'], currentUser?.id);
       setLaporanForm({
         nama: currentUser?.nama || '',
         blok: currentUser?.noRumah || '',
@@ -549,7 +582,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const { error } = await supabase.from('profiles').update(profileData).eq('id', editingWarga.id);
       if (!error) {
         setWargaList(wargaList.map(w => w.id === editingWarga.id ? { ...w, ...wargaForm } as Warga : w));
-        addNotification('Data warga berhasil diperbarui', 'success', ['admin']);
+        addNotification('Data warga berhasil diperbarui', 'success', ['admin'], currentUser?.id);
       } else {
         console.error('Error updating warga:', error);
         addNotification('Gagal memperbarui data warga', 'warning');
@@ -567,7 +600,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (data) {
         console.log('Insert successful:', data);
         setWargaList([...wargaList, { ...data[0], id: data[0].id, nama: data[0].nama, noRumah: data[0].no_rumah, noWA: data[0].no_wa, status: data[0].status, peran: data[0].peran, kodeAkses: data[0].kode_akses, foto: data[0].foto } as Warga]);
-        addNotification(`Warga baru berhasil ditambahkan. Kode Akses: ${kodeAkses}`, 'success', ['admin']);
+        addNotification(`Warga baru berhasil ditambahkan. Kode Akses: ${kodeAkses}`, 'success', ['admin'], currentUser?.id);
+        addNotification(`Selamat datang warga baru: ${wargaForm.nama} di Blok ${wargaForm.noRumah}`, 'info', ['admin', 'warga'], currentUser?.id);
       } else {
         console.error('Error inserting warga:', error);
         console.error('Full error object:', JSON.stringify(error, null, 2));
@@ -604,7 +638,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (data) {
       setPayments([data[0], ...payments]);
       setShowPaymentModal(false);
-      addNotification(`Bukti pembayaran ${paymentType} telah dikirim. Menunggu verifikasi admin.`, 'info');
+      addNotification(`Bukti pembayaran ${paymentType} telah dikirim. Menunggu verifikasi admin.`, 'info', undefined, currentUser?.id);
     }
   };
 
@@ -615,7 +649,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setAcaraList([data[0], ...acaraList]);
       setShowAcaraModal(false);
       setAcaraForm({});
-      addNotification(`Acara baru telah dibuat: ${data[0].judul}`, 'info');
+      addNotification(`Acara baru telah dibuat: ${data[0].judul}`, 'info', ['admin', 'warga'], currentUser?.id);
     }
   };
 
@@ -624,7 +658,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const { error } = await supabase.from('profiles').delete().eq('id', id);
       if (!error) {
         setWargaList(wargaList.filter(w => w.id !== id));
-        addNotification('Data warga berhasil dihapus', 'warning', ['admin']);
+        addNotification('Data warga berhasil dihapus', 'warning', ['admin'], currentUser?.id);
       }
     }
   };
@@ -634,7 +668,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!error) {
       setPayments(payments.map(p => {
         if (p.id === id) {
-          addNotification(`Pembayaran ${p.tipe} Anda telah ${status === 'Lunas' ? 'diverifikasi' : 'ditolak'}`, status === 'Lunas' ? 'success' : 'warning', ['warga']);
+          addNotification(`Pembayaran ${p.tipe} Anda telah ${status === 'Lunas' ? 'diverifikasi' : 'ditolak'}`, status === 'Lunas' ? 'success' : 'warning', ['admin'], currentUser?.id);
           return { ...p, status };
         }
         return p;
@@ -647,7 +681,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const { error } = await supabase.from('payments').delete().eq('id', id);
       if (!error) {
         setPayments(payments.filter(p => p.id !== id));
-        addNotification('Data pembayaran berhasil dihapus', 'warning', ['admin']);
+        addNotification('Data pembayaran berhasil dihapus', 'warning', ['admin'], currentUser?.id);
       }
     }
   };
@@ -660,7 +694,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!error) {
       setLaporanList(laporanList.map(l => {
         if (l.id === id) {
-          addNotification(`Laporan Anda "${l.keluhan.substring(0, 20)}..." telah ${status.toLowerCase()}`, status === 'Selesai' ? 'success' : 'info', ['warga']);
+          addNotification(`Laporan Anda "${l.keluhan.substring(0, 20)}..." telah ${status.toLowerCase()}`, status === 'Selesai' ? 'success' : 'info', ['admin'], currentUser?.id);
           return { ...l, status, tanggapanAdmin: tanggapan };
         }
         return l;
@@ -679,7 +713,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const { error } = await supabase.from('profiles').update(updateData).eq('id', editingSecurity.id);
       if (!error) {
         setSecurityList(securityList.map(s => s.id === editingSecurity.id ? { ...s, ...securityForm } as Security : s));
-        addNotification('Data security berhasil diperbarui', 'success', ['admin']);
+        addNotification('Data security berhasil diperbarui', 'success', ['admin'], currentUser?.id);
       }
     } else {
       const kodeAkses = `sec.${securityForm.nama.split(' ')[0].toLowerCase()}`;
@@ -703,7 +737,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           status: data[0].status,
           foto: data[0].foto
         }]);
-        addNotification(`Security baru berhasil ditambahkan. Kode Akses: ${kodeAkses}`, 'success', ['admin']);
+        addNotification(`Security baru berhasil ditambahkan. Kode Akses: ${kodeAkses}`, 'success', ['admin'], currentUser?.id);
+        addNotification(`Personil security baru telah bergabung: ${securityForm.nama}`, 'info', ['admin', 'warga'], currentUser?.id);
       }
     }
     setShowSecurityModal(false);
@@ -716,7 +751,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const { error } = await supabase.from('profiles').delete().eq('id', id);
       if (!error) {
         setSecurityList(securityList.filter(s => s.id !== id));
-        addNotification('Data security berhasil dihapus', 'warning', ['admin']);
+        addNotification('Data security berhasil dihapus', 'warning', ['admin'], currentUser?.id);
       }
     }
   };
@@ -725,7 +760,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const { error } = await supabase.from('profiles').update({ status }).eq('id', id);
     if (!error) {
       setSecurityList(securityList.map(s => s.id === id ? { ...s, status } : s));
-      addNotification(`Status absensi ${securityList.find(s => s.id === id)?.nama} diperbarui menjadi ${status}`, 'info', ['admin']);
+      addNotification(`Status absensi ${securityList.find(s => s.id === id)?.nama} diperbarui menjadi ${status}`, 'info', ['admin'], currentUser?.id);
     }
   };
 
@@ -733,7 +768,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     e.preventDefault();
     const { error } = await supabase.from('settings').upsert({ id: 'admin', data: adminSettings });
     if (!error) {
-      addNotification('Pengaturan admin berhasil disimpan', 'success');
+      addNotification('Pengaturan admin berhasil disimpan', 'success', undefined, currentUser?.id);
     }
   };
 
@@ -742,7 +777,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!currentUser) return;
     const { error } = await supabase.from('settings').upsert({ id: currentUser.id, data: userSettings });
     if (!error) {
-      addNotification('Pengaturan profil berhasil disimpan', 'success');
+      addNotification('Pengaturan profil berhasil disimpan', 'success', undefined, currentUser?.id);
     }
   };
 
@@ -776,8 +811,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setShowPollForm(false);
       setPollForm({question: '', opt1: '', opt2: ''});
       setShowForumForm(false);
-      addNotification(`Utas baru di Forum ${forumTab}: ${newPost.substring(0, 30)}...`, 'info', ['admin', 'warga']);
-      addNotification('Postingan forum berhasil dikirim', 'success');
+      addNotification(`Utas baru di Forum ${forumTab}: ${newPost.substring(0, 30)}...`, 'info', ['admin', 'warga'], currentUser?.id);
+      addNotification('Postingan forum berhasil dikirim', 'success', undefined, currentUser?.id);
     }
   };
 
@@ -806,6 +841,11 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }));
       setReplyContent('');
       setReplyingToPostId(null);
+      
+      const post = forumPosts.find(p => p.id === postId);
+      if (post && post.author_id !== currentUser?.id) {
+        addNotification(`${currentUser?.nama} membalas postingan Anda: "${replyContent.substring(0, 20)}..."`, 'info', undefined, currentUser?.id, post.author_id);
+      }
     }
   };
 
@@ -814,7 +854,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       const { error } = await supabase.from('forum_posts').delete().eq('id', postId);
       if (!error) {
         setForumPosts(forumPosts.filter(p => p.id !== postId));
-        addNotification('Postingan berhasil dihapus', 'warning');
+        addNotification('Postingan berhasil dihapus', 'warning', undefined, currentUser?.id);
       }
     }
   };
@@ -829,6 +869,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
           }
           return p;
         }));
+        addNotification('Balasan berhasil dihapus', 'warning', undefined, currentUser?.id);
       }
     }
   };
@@ -860,7 +901,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setForumPosts(forumPosts.map(p => p.id === postId ? { ...p, content: editingPostContent } : p));
       setEditingPostId(null);
       setEditingPostContent('');
-      addNotification('Postingan berhasil diperbarui', 'success');
+      addNotification('Postingan berhasil diperbarui', 'success', undefined, currentUser?.id);
     }
   };
 
@@ -878,7 +919,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       }));
       setEditingReplyId(null);
       setEditingReplyContent('');
-      addNotification('Balasan berhasil diperbarui', 'success');
+      addNotification('Balasan berhasil diperbarui', 'success', undefined, currentUser?.id);
     }
   };
 
@@ -900,38 +941,55 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const verificationQueue = useMemo(() => payments.filter(p => p.status === 'Menunggu'), [payments]);
   const pendingLaporan = useMemo(() => laporanList.filter(l => l.status === 'Menunggu'), [laporanList]);
 
-  const addNotification = async (pesan: string, tipe: 'info' | 'success' | 'warning' = 'info', roles?: UserRole[]) => {
+  const addNotification = async (pesan: string, tipe: 'info' | 'success' | 'warning' = 'info', roles?: UserRole[], excludeUserId?: string, targetUserId?: string) => {
     const newNotif = {
       pesan,
       dibaca: false,
       tipe,
-      target_role: roles
+      target_role: roles,
+      exclude_user_id: excludeUserId,
+      target_user_id: targetUserId
     };
     
     const { data, error } = await supabase.from('notifikasi').insert([newNotif]).select();
+    if (error) {
+      console.error('Error adding notification:', error);
+    }
     if (data) {
       setNotifikasiList(prev => [data[0], ...prev]);
     }
   };
 
   const markNotificationsAsRead = async () => {
+    if (!currentUser) return;
+    
+    const readNotifs = userSettings?.readNotifications || [];
     const unreadNotifs = notifikasiList.filter(n => {
-      const isTarget = !n.dibaca && (n.targetRole?.includes(userRole as any) || !n.targetRole || n.targetRole.length === 0);
+      const isTargetUser = n.target_user_id === currentUser?.id;
+      const isTargetRole = n.target_role?.includes(userRole as any) || !n.target_role || n.target_role.length === 0;
+      const isExcluded = n.exclude_user_id === currentUser?.id;
+      
+      const isTarget = !readNotifs.includes(n.id) && (n.target_user_id ? isTargetUser : isTargetRole);
+      
       if (userRole === 'security') {
-        return isTarget && n.pesan.toLowerCase().includes('laporan');
+        return isTarget && !isExcluded && n.pesan.toLowerCase().includes('laporan');
       }
-      return isTarget;
+      return isTarget && !isExcluded;
     });
+    
     if (unreadNotifs.length === 0) return;
 
+    const newReadNotifs = [...readNotifs, ...unreadNotifs.map(n => n.id)];
+    
     // Optimistic update
-    setNotifikasiList(prev => prev.map(n => {
-      const isTarget = n.targetRole?.includes(userRole as any) || !n.targetRole || n.targetRole.length === 0;
-      const shouldMark = userRole === 'security' ? (isTarget && n.pesan.toLowerCase().includes('laporan')) : isTarget;
-      return shouldMark ? { ...n, dibaca: true } : n;
-    }));
+    const newUserSettings = { ...userSettings, readNotifications: newReadNotifs };
+    setUserSettings(newUserSettings);
 
-    const { error } = await supabase.from('notifikasi').update({ dibaca: true }).in('id', unreadNotifs.map(n => n.id));
+    const { error } = await supabase.from('settings').upsert({ 
+      id: currentUser.id, 
+      data: newUserSettings 
+    });
+    
     if (error) {
       console.error('Error marking notifications as read:', error);
     }
@@ -957,6 +1015,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setUserRole(profile.role);
       setCurrentUser(profile);
       setLoginError('');
+      
+      // Fetch user settings
+      const { data: userSet } = await supabase.from('settings').select('*').eq('id', profile.id).single();
+      if (userSet && userSet.data) {
+        setUserSettings(userSet.data);
+      } else {
+        // Reset to default if no settings found
+        setUserSettings({
+          notifications: { events: true, billing: true, forumPosts: true, forumComments: true, laporanWarga: true },
+          readNotifications: []
+        });
+      }
+      
       return true;
     } else {
       setLoginError('Username atau Password salah!');
@@ -968,6 +1039,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     setUserRole(null);
     setCurrentUser(null);
     setActiveMenu('dashboard');
+    setUserSettings({
+      notifications: { events: true, billing: true, forumPosts: true, forumComments: true, laporanWarga: true },
+      readNotifications: []
+    });
   };
 
   return (

@@ -61,7 +61,8 @@ function AppContent() {
     verificationQueue, 
     pendingLaporan,
     handleLogin,
-    handleLogout
+    handleLogout,
+    userSettings
   } = useAppContext();
 
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -73,14 +74,20 @@ function AppContent() {
   const [legalView, setLegalView] = useState<'privacy' | 'terms' | null>(null);
 
   const displayNotifs = notifikasiList.filter(n => {
-    const isTarget = n.targetRole?.includes(userRole as any) || !n.targetRole || n.targetRole.length === 0;
+    const isTargetUser = n.target_user_id === currentUser?.id;
+    const isTargetRole = n.target_role?.includes(userRole as any) || !n.target_role || n.target_role.length === 0;
+    const isExcluded = n.exclude_user_id === currentUser?.id;
+    
+    const isTarget = n.target_user_id ? isTargetUser : isTargetRole;
+    
     if (userRole === 'security') {
-      return isTarget && n.pesan.toLowerCase().includes('laporan');
+      return isTarget && !isExcluded && n.pesan.toLowerCase().includes('laporan');
     }
-    return isTarget;
+    return isTarget && !isExcluded;
   });
 
-  const unreadCount = displayNotifs.filter(n => !n.dibaca).length;
+  const readNotifs = userSettings?.readNotifications || [];
+  const unreadCount = displayNotifs.filter(n => !readNotifs.includes(n.id)).length;
 
   const onLogin = async (e: React.FormEvent) => {
     const success = await handleLogin(e, loginForm, setLoginError);
@@ -350,8 +357,8 @@ function AppContent() {
                       <div className="max-h-[450px] overflow-y-auto custom-scrollbar">
                         {displayNotifs.length > 0 ? (
                           displayNotifs.map(notif => (
-                            <div key={notif.id} className={`p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer group ${!notif.dibaca ? 'bg-blue-50/40' : ''}`}>
-                              <p className={`text-sm text-slate-700 mb-1 leading-relaxed ${!notif.dibaca ? 'font-semibold' : 'font-medium'}`}>{notif.pesan}</p>
+                            <div key={notif.id} className={`p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer group ${!readNotifs.includes(notif.id) ? 'bg-blue-50/40' : ''}`}>
+                              <p className={`text-sm text-slate-700 mb-1 leading-relaxed ${!readNotifs.includes(notif.id) ? 'font-semibold' : 'font-medium'}`}>{notif.pesan}</p>
                               <div className="flex items-center gap-1.5 text-slate-400">
                                 <Clock size={10} />
                                 <span className="text-[11px] font-medium">{notif.waktu}</span>

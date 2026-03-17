@@ -105,8 +105,9 @@ export interface Notifikasi {
   waktu: string;
   dibaca: boolean;
   tipe: 'info' | 'success' | 'warning';
-  targetRole?: UserRole[];
-  targetUserId?: string;
+  target_role?: UserRole[];
+  target_user_id?: string;
+  exclude_user_id?: string;
 }
 
 export interface AdminSettings {
@@ -141,6 +142,7 @@ export interface UserSettings {
     forumComments: boolean;
     laporanWarga: boolean;
   };
+  readNotifications?: string[];
 }
 
 export interface AdministrativeSubmission {
