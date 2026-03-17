@@ -234,38 +234,48 @@ export const Settings: React.FC = () => {
               <h3 className="font-bold text-sm">Pengaturan Notifikasi</h3>
             </div>
             <div className="p-6 space-y-4">
-              {(userRole === 'security' || (userRole === 'warga' && currentUser?.peran === 'RT')) && (
-                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+              {userRole === 'security' ? (
+                <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl border border-blue-100">
                   <div>
                     <p className="text-sm font-bold text-slate-800">Laporan Warga</p>
-                    <p className="text-xs text-slate-500">Notif saat ada laporan warga masuk</p>
+                    <p className="text-xs text-slate-500">Notifikasi ini selalu aktif untuk memantau laporan warga</p>
                   </div>
-                  <button onClick={() => toggleUserNotif('laporanWarga')}>
-                    {userSettings.notifications.laporanWarga ? (
-                      <ToggleRight size={32} className="text-blue-600" />
-                    ) : (
-                      <ToggleLeft size={32} className="text-slate-300" />
-                    )}
-                  </button>
+                  <div className="text-blue-600">
+                    <ToggleRight size={32} />
+                  </div>
                 </div>
-              )}
-
-              <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
-                <div>
-                  <p className="text-sm font-bold text-slate-800">Notifikasi Acara</p>
-                  <p className="text-xs text-slate-500">Pemberitahuan kegiatan warga baru</p>
-                </div>
-                <button onClick={() => toggleUserNotif('events')}>
-                  {userSettings.notifications.events ? (
-                    <ToggleRight size={32} className="text-blue-600" />
-                  ) : (
-                    <ToggleLeft size={32} className="text-slate-300" />
-                  )}
-                </button>
-              </div>
-              
-              {userRole !== 'security' && (
+              ) : (
                 <>
+                  {(userRole === 'warga' && currentUser?.peran === 'RT') && (
+                    <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                      <div>
+                        <p className="text-sm font-bold text-slate-800">Laporan Warga</p>
+                        <p className="text-xs text-slate-500">Notif saat ada laporan warga masuk</p>
+                      </div>
+                      <button onClick={() => toggleUserNotif('laporanWarga')}>
+                        {userSettings.notifications.laporanWarga ? (
+                          <ToggleRight size={32} className="text-blue-600" />
+                        ) : (
+                          <ToggleLeft size={32} className="text-slate-300" />
+                        )}
+                      </button>
+                    </div>
+                  )}
+
+                  <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
+                    <div>
+                      <p className="text-sm font-bold text-slate-800">Notifikasi Acara</p>
+                      <p className="text-xs text-slate-500">Pemberitahuan kegiatan warga baru</p>
+                    </div>
+                    <button onClick={() => toggleUserNotif('events')}>
+                      {userSettings.notifications.events ? (
+                        <ToggleRight size={32} className="text-blue-600" />
+                      ) : (
+                        <ToggleLeft size={32} className="text-slate-300" />
+                      )}
+                    </button>
+                  </div>
+                  
                   <div className="flex items-center justify-between p-4 bg-slate-50 rounded-2xl">
                     <div>
                       <p className="text-sm font-bold text-slate-800">Tagihan Iuran</p>
@@ -311,33 +321,35 @@ export const Settings: React.FC = () => {
           </div>
 
           {/* Account Summary */}
-          <div className="bg-blue-900 rounded-2xl p-8 text-white flex flex-col justify-between relative overflow-hidden shadow-xl shadow-blue-900/30">
-            <div className="relative z-10">
-              <h3 className="text-2xl font-bold mb-2">Halo, Warga!</h3>
-              <p className="text-blue-200 text-sm mb-8">Pastikan notifikasi Anda aktif agar tidak ketinggalan informasi penting seputar Paguyuban Blue Oasis.</p>
-              
-              <div className="space-y-4">
-                <div className="flex items-center gap-3 bg-white/10 p-3 rounded-xl backdrop-blur-sm border border-white/10">
-                  <CheckCircle2 size={20} className="text-emerald-400" />
-                  <div>
-                    <p className="text-xs font-bold">Status Akun</p>
-                    <p className="text-[10px] text-blue-200 uppercase tracking-widest">Terverifikasi</p>
+          {userRole !== 'security' && (
+            <div className="bg-blue-900 rounded-2xl p-8 text-white flex flex-col justify-between relative overflow-hidden shadow-xl shadow-blue-900/30">
+              <div className="relative z-10">
+                <h3 className="text-2xl font-bold mb-2">Halo, Warga!</h3>
+                <p className="text-blue-200 text-sm mb-8">Pastikan notifikasi Anda aktif agar tidak ketinggalan informasi penting seputar Paguyuban Blue Oasis.</p>
+                
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3 bg-white/10 p-3 rounded-xl backdrop-blur-sm border border-white/10">
+                    <CheckCircle2 size={20} className="text-emerald-400" />
+                    <div>
+                      <p className="text-xs font-bold">Status Akun</p>
+                      <p className="text-[10px] text-blue-200 uppercase tracking-widest">Terverifikasi</p>
+                    </div>
                   </div>
-                </div>
-                <div className="flex items-center gap-3 bg-white/10 p-3 rounded-xl backdrop-blur-sm border border-white/10">
-                  <Bell size={20} className="text-amber-400" />
-                  <div>
-                    <p className="text-xs font-bold">Notifikasi Aktif</p>
-                    <p className="text-[10px] text-blue-200 uppercase tracking-widest">4 Kategori</p>
+                  <div className="flex items-center gap-3 bg-white/10 p-3 rounded-xl backdrop-blur-sm border border-white/10">
+                    <Bell size={20} className="text-amber-400" />
+                    <div>
+                      <p className="text-xs font-bold">Notifikasi Aktif</p>
+                      <p className="text-[10px] text-blue-200 uppercase tracking-widest">4 Kategori</p>
+                    </div>
                   </div>
                 </div>
               </div>
+              
+              {/* Decorative circles */}
+              <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl"></div>
+              <div className="absolute -top-10 -left-10 w-40 h-40 bg-blue-400/10 rounded-full blur-2xl"></div>
             </div>
-            
-            {/* Decorative circles */}
-            <div className="absolute -bottom-10 -right-10 w-40 h-40 bg-white/5 rounded-full blur-2xl"></div>
-            <div className="absolute -top-10 -left-10 w-40 h-40 bg-blue-400/10 rounded-full blur-2xl"></div>
-          </div>
+          )}
         </div>
       )}
     </motion.div>

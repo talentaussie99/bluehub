@@ -159,7 +159,7 @@ export const Kas: React.FC = () => {
                   </tr>
                 ))}
                 <tr className="bg-emerald-50/30">
-                  <td className="px-4 py-2 text-slate-500">2024-03-01</td>
+                  <td className="px-4 py-2 text-slate-500">2026-03-01</td>
                   <td className="px-4 py-2 font-medium">Akumulasi Iuran Kas Warga (Maret)</td>
                   <td className="px-4 py-2">
                     <span className="bg-emerald-100 text-emerald-600 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase">Masuk</span>
@@ -191,19 +191,19 @@ export const Kas: React.FC = () => {
                     const data = wargaList.map(w => [
                       w.nama,
                       ...MONTHS.map((_, idx) => {
-                        const payment = payments.find(p => p.wargaId === w.id && p.bulan === idx && p.tipe === 'Kas' && p.tahun === 2024);
+                        const payment = payments.find(p => p.wargaId === w.id && p.bulan === idx && p.tipe === 'Kas' && p.tahun === 2026);
                         return payment ? payment.status : 'Belum';
                       })
                     ]);
-                    exportToPDF('Laporan Iuran Kas 2024', ['Nama', ...MONTHS], data);
+                    exportToPDF('Laporan Iuran Kas 2026', ['Nama', ...MONTHS], data);
                   }}
                   className="flex-1 sm:flex-none bg-emerald-50 text-emerald-600 px-3 py-1.5 rounded-lg flex items-center justify-center gap-2 hover:bg-emerald-100 transition-all text-xs font-bold"
                 >
                   <Download size={14} /> Export PDF
                 </button>
                 <select className="flex-1 sm:flex-none bg-white border border-slate-200 rounded-lg px-3 py-1.5 text-xs font-bold focus:ring-2 focus:ring-blue-500">
-                  <option>Tahun 2024</option>
-                  <option>Tahun 2023</option>
+                  <option>Tahun 2026</option>
+                  <option>Tahun 2025</option>
                 </select>
               </div>
             </div>
@@ -225,7 +225,7 @@ export const Kas: React.FC = () => {
                         <div className="text-[10px] text-slate-400">{w.noRumah}</div>
                       </td>
                       {MONTHS.map((_, idx) => {
-                        const payment = payments.find(p => p.wargaId === w.id && p.bulan === idx && p.tipe === 'Kas' && p.tahun === 2024);
+                        const payment = payments.find(p => p.wargaId === w.id && p.bulan === idx && p.tipe === 'Kas' && p.tahun === 2026);
                         const status = payment ? payment.status : 'Belum';
                         return (
                           <td key={idx} className="px-1.5 py-2 text-center">
@@ -243,7 +243,7 @@ export const Kas: React.FC = () => {
                                       wargaId: w.id,
                                       wargaNama: w.nama,
                                       bulan: idx,
-                                      tahun: 2024,
+                                      tahun: 2026,
                                       nominal: 25000,
                                       tipe: 'Kas',
                                       status: newStatus,

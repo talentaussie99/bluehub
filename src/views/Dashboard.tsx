@@ -232,7 +232,7 @@ export const Dashboard: React.FC = () => {
               {forumPosts.slice(0, 3).map(post => (
                 <div key={post.id} className="flex gap-2">
                   <div className="w-8 h-8 bg-slate-200 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-slate-500 text-xs">
-                    {post.author[0]}
+                    {post.author?.[0] || '?'}
                   </div>
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5 mb-0.5">

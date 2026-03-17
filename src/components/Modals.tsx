@@ -9,11 +9,50 @@ export const Modals: React.FC = () => {
     showWargaModal, setShowWargaModal, editingWarga, wargaForm, setWargaForm, handleSaveWarga,
     showPaymentModal, setShowPaymentModal, paymentType, paymentForm, setPaymentForm, handleSubmitPayment,
     showBonusModal, setShowBonusModal, bonusForm, setBonusForm, setBonusBills, bonusBills,
-    showAcaraModal, setShowAcaraModal, acaraForm, setAcaraForm, handleSaveAcara
+    showAcaraModal, setShowAcaraModal, acaraForm, setAcaraForm, handleSaveAcara,
+    showSecurityModal, setShowSecurityModal, editingSecurity, securityForm, setSecurityForm, handleSaveSecurity
   } = useAppContext();
 
   return (
     <>
+      {/* Modal Security CRUD */}
+      <AnimatePresence>
+        {showSecurityModal && (
+          <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+            <motion.div 
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} exit={{ opacity: 0, scale: 0.95 }}
+              className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden"
+            >
+              <div className="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
+                <h3 className="font-bold text-base">{editingSecurity ? 'Edit Data Security' : 'Tambah Security Baru'}</h3>
+                <button onClick={() => setShowSecurityModal(false)} className="text-slate-400 hover:text-slate-600"><XCircle size={18}/></button>
+              </div>
+              <form onSubmit={handleSaveSecurity} className="p-4 space-y-3">
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Nama Lengkap</label>
+                  <input type="text" required value={securityForm.nama || ''} onChange={e => setSecurityForm({...securityForm, nama: e.target.value})} className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">No Telepon</label>
+                  <input type="text" required value={securityForm.noTelp || ''} onChange={e => setSecurityForm({...securityForm, noTelp: e.target.value})} className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Shift</label>
+                  <select value={securityForm.shift || 'Pagi'} onChange={e => setSecurityForm({...securityForm, shift: e.target.value as any})} className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none">
+                    <option value="Pagi">Pagi</option>
+                    <option value="Malam">Malam</option>
+                  </select>
+                </div>
+                <div className="pt-3 flex gap-2">
+                  <button type="button" onClick={() => setShowSecurityModal(false)} className="flex-1 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-200 transition-colors">Batal</button>
+                  <button type="submit" className="flex-1 py-2 bg-blue-900 text-white font-bold rounded-xl text-xs hover:bg-blue-800 transition-colors">Simpan</button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+
       {/* Modal Warga CRUD */}
       <AnimatePresence>
         {showWargaModal && (

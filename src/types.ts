@@ -41,6 +41,7 @@ export interface BonusBill {
 
 export interface ForumPost {
   id: string;
+  author_id: string;
   author: string;
   content: string;
   timestamp: string;
@@ -52,7 +53,7 @@ export interface ForumPost {
     options: { id: string; text: string; votes: number }[];
     votedBy: string[];
   };
-  replies?: { id: string; author: string; content: string; timestamp: string }[];
+  replies?: { id: string; author_id: string; author: string; content: string; timestamp: string }[];
 }
 
 export interface Laporan {

@@ -6,7 +6,9 @@ import {
   Image as ImageIcon, 
   XCircle, 
   BarChart2, 
-  Send 
+  Send,
+  Pencil,
+  Trash2
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { ForumPost } from '../types';
@@ -16,6 +18,8 @@ export const Forum: React.FC = () => {
     userRole, 
     forumTab, 
     setForumTab, 
+    showForumForm,
+    setShowForumForm,
     newPost, 
     setNewPost, 
     postAttachment, 
@@ -30,9 +34,21 @@ export const Forum: React.FC = () => {
     setReplyingToPostId,
     replyContent,
     setReplyContent,
+    editingPostId,
+    setEditingPostId,
+    editingPostContent,
+    setEditingPostContent,
+    editingReplyId,
+    setEditingReplyId,
+    editingReplyContent,
+    setEditingReplyContent,
     handleSubmitForum,
     handleSubmitReply,
     handleVote,
+    handleEditPost,
+    handleEditReply,
+    handleDeletePost,
+    handleDeleteReply,
     currentUser
   } = useAppContext();
 
@@ -60,65 +76,85 @@ export const Forum: React.FC = () => {
           </button>
         </div>
 
-        <div className="p-3 bg-slate-50 border-b border-slate-100">
-          <div className="flex gap-2.5">
-            <div className="w-10 h-10 bg-blue-900 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0 uppercase text-sm">
-              {userRole === 'admin' ? 'A' : 'W'}
-            </div>
-            <div className="flex-1">
-              <textarea 
-                value={newPost}
-                onChange={(e) => setNewPost(e.target.value)}
-                placeholder={forumTab === 'Umum' ? "Apa yang ingin Anda sampaikan di Paguyuban?" : "Apa yang ingin Anda jual?"}
-                className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none h-16 resize-none shadow-inner mb-2"
-              ></textarea>
-              
-              {/* Poll Form */}
-              {showPollForm && forumTab === 'Umum' && (
-                <div className="bg-white p-3 rounded-xl border border-slate-200 mb-2 space-y-2">
-                  <input type="text" placeholder="Pertanyaan Polling" value={pollForm.question} onChange={e => setPollForm({...pollForm, question: e.target.value})} className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" />
+        <div className="p-4 bg-slate-50 border-b border-slate-100">
+          {!showForumForm ? (
+            <button 
+              onClick={() => setShowForumForm(true)}
+              className="w-full py-3 px-4 bg-white border border-slate-200 rounded-xl text-slate-400 text-sm font-medium text-left hover:border-blue-300 hover:bg-blue-50/30 transition-all flex items-center gap-3 shadow-sm"
+            >
+              <div className="w-8 h-8 bg-blue-900 text-white rounded-full flex items-center justify-center font-bold uppercase text-xs">
+                {userRole === 'admin' ? 'A' : 'W'}
+              </div>
+              Buat Utas (Thread) Baru di {forumTab}...
+            </button>
+          ) : (
+            <div className="flex gap-2.5">
+              <div className="w-10 h-10 bg-blue-900 text-white rounded-full flex items-center justify-center font-bold flex-shrink-0 uppercase text-sm">
+                {userRole === 'admin' ? 'A' : 'W'}
+              </div>
+              <div className="flex-1">
+                <textarea 
+                  value={newPost}
+                  onChange={(e) => setNewPost(e.target.value)}
+                  placeholder={forumTab === 'Umum' ? "Apa yang ingin Anda sampaikan di Paguyuban?" : "Apa yang ingin Anda jual?"}
+                  className="w-full px-3 py-2 bg-white border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none h-24 resize-none shadow-inner mb-2"
+                ></textarea>
+                
+                {/* Poll Form */}
+                {showPollForm && forumTab === 'Umum' && (
+                  <div className="bg-white p-3 rounded-xl border border-slate-200 mb-2 space-y-2">
+                    <input type="text" placeholder="Pertanyaan Polling" value={pollForm.question} onChange={e => setPollForm({...pollForm, question: e.target.value})} className="w-full px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" />
+                    <div className="flex gap-2">
+                      <input type="text" placeholder="Opsi 1" value={pollForm.opt1} onChange={e => setPollForm({...pollForm, opt1: e.target.value})} className="flex-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" />
+                      <input type="text" placeholder="Opsi 2" value={pollForm.opt2} onChange={e => setPollForm({...pollForm, opt2: e.target.value})} className="flex-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" />
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex justify-between items-center">
+                  <div className="flex gap-1.5">
+                    <label className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer transition-colors flex items-center gap-1 text-xs font-bold">
+                      <ImageIcon size={16} /> {postAttachment ? 'Foto Terlampir' : 'Lampirkan Foto'}
+                      <input type="file" className="hidden" accept="image/*" onChange={e => {
+                        if(e.target.files && e.target.files[0]) {
+                          const file = e.target.files[0];
+                          const reader = new FileReader();
+                          reader.onloadend = () => {
+                            setPostAttachment({ name: file.name, url: reader.result as string });
+                          };
+                          reader.readAsDataURL(file);
+                        }
+                      }} />
+                    </label>
+                    {postAttachment && (
+                      <button onClick={() => setPostAttachment(null)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
+                        <XCircle size={14} />
+                      </button>
+                    )}
+                    {forumTab === 'Umum' && (
+                      <button onClick={() => setShowPollForm(!showPollForm)} className={`p-1.5 rounded-lg transition-colors flex items-center gap-1 text-xs font-bold ${showPollForm ? 'text-blue-600 bg-blue-50' : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50'}`}>
+                        <BarChart2 size={16} /> Polling
+                      </button>
+                    )}
+                  </div>
                   <div className="flex gap-2">
-                    <input type="text" placeholder="Opsi 1" value={pollForm.opt1} onChange={e => setPollForm({...pollForm, opt1: e.target.value})} className="flex-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" />
-                    <input type="text" placeholder="Opsi 2" value={pollForm.opt2} onChange={e => setPollForm({...pollForm, opt2: e.target.value})} className="flex-1 px-2.5 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs" />
+                    <button 
+                      onClick={() => setShowForumForm(false)}
+                      className="text-slate-500 px-3 py-1.5 rounded-lg hover:bg-slate-200 transition-all text-xs font-bold"
+                    >
+                      Batal
+                    </button>
+                    <button 
+                      onClick={handleSubmitForum}
+                      className="bg-blue-900 text-white px-4 py-1.5 rounded-lg hover:bg-blue-800 transition-all shadow-md flex items-center gap-1.5 text-xs font-bold"
+                    >
+                      <Send size={14} /> Kirim Utas
+                    </button>
                   </div>
                 </div>
-              )}
-
-              <div className="flex justify-between items-center">
-                <div className="flex gap-1.5">
-                  <label className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg cursor-pointer transition-colors flex items-center gap-1 text-xs font-bold">
-                    <ImageIcon size={16} /> {postAttachment ? 'Foto Terlampir' : 'Lampirkan Foto'}
-                    <input type="file" className="hidden" accept="image/*" onChange={e => {
-                      if(e.target.files && e.target.files[0]) {
-                        const file = e.target.files[0];
-                        const reader = new FileReader();
-                        reader.onloadend = () => {
-                          setPostAttachment({ name: file.name, url: reader.result as string });
-                        };
-                        reader.readAsDataURL(file);
-                      }
-                    }} />
-                  </label>
-                  {postAttachment && (
-                    <button onClick={() => setPostAttachment(null)} className="p-1.5 text-red-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors">
-                      <XCircle size={14} />
-                    </button>
-                  )}
-                  {forumTab === 'Umum' && (
-                    <button onClick={() => setShowPollForm(!showPollForm)} className={`p-1.5 rounded-lg transition-colors flex items-center gap-1 text-xs font-bold ${showPollForm ? 'text-blue-600 bg-blue-50' : 'text-slate-400 hover:text-blue-600 hover:bg-blue-50'}`}>
-                      <BarChart2 size={16} /> Polling
-                    </button>
-                  )}
-                </div>
-                <button 
-                  onClick={handleSubmitForum}
-                  className="bg-blue-900 text-white px-3 py-1.5 rounded-lg hover:bg-blue-800 transition-all shadow-md flex items-center gap-1.5 text-xs font-bold"
-                >
-                  <Send size={14} /> Kirim
-                </button>
               </div>
             </div>
-          </div>
+          )}
         </div>
 
         <div className="divide-y divide-slate-100">
@@ -126,7 +162,7 @@ export const Forum: React.FC = () => {
             <div key={post.id} className="p-4 hover:bg-slate-50/50 transition-all">
               <div className="flex gap-3">
                 <div className="w-8 h-8 bg-slate-200 rounded-full flex items-center justify-center font-bold text-slate-500 flex-shrink-0 text-xs">
-                  {post.author[0]}
+                  {post.author?.[0] || '?'}
                 </div>
                 <div className="flex-1">
                   <div className="flex justify-between items-start mb-1.5">
@@ -134,13 +170,67 @@ export const Forum: React.FC = () => {
                       <h4 className="font-bold text-slate-800 text-base">{post.author}</h4>
                       <p className="text-[11px] text-slate-400 font-medium uppercase tracking-wider">{post.timestamp}</p>
                     </div>
-                    {post.price && (
-                      <span className="bg-emerald-100 text-emerald-600 px-2.5 py-0.5 rounded-full text-xs font-bold">
-                        {post.price}
-                      </span>
-                    )}
+                    <div className="flex items-center gap-2">
+                      {post.price && (
+                        <span className="bg-emerald-100 text-emerald-600 px-2.5 py-0.5 rounded-full text-xs font-bold">
+                          {post.price}
+                        </span>
+                      )}
+                      <div className="flex gap-1">
+                        {(currentUser?.id === post.author_id) && (
+                          <button 
+                            onClick={() => {
+                              setEditingPostId(post.id);
+                              setEditingPostContent(post.content);
+                            }}
+                            className="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Edit Utas"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                        )}
+                        {(currentUser?.id === post.author_id || userRole === 'admin') && (
+                          <button 
+                            onClick={() => {
+                              if(window.confirm('Hapus utas ini?')) {
+                                handleDeletePost(post.id);
+                              }
+                            }}
+                            className="p-1.5 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Hapus Utas"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap mb-2">{post.content}</p>
+                  
+                  {editingPostId === post.id ? (
+                    <div className="mb-3">
+                      <textarea 
+                        value={editingPostContent}
+                        onChange={(e) => setEditingPostContent(e.target.value)}
+                        className="w-full px-3 py-2 bg-white border border-blue-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none h-24 resize-none shadow-inner mb-2"
+                      ></textarea>
+                      <div className="flex justify-end gap-2">
+                        <button 
+                          onClick={() => setEditingPostId(null)}
+                          className="text-slate-500 px-3 py-1 rounded-lg hover:bg-slate-200 transition-all text-xs font-bold"
+                        >
+                          Batal
+                        </button>
+                        <button 
+                          onClick={() => handleEditPost(post.id)}
+                          className="bg-blue-900 text-white px-4 py-1 rounded-lg hover:bg-blue-800 transition-all shadow-md text-xs font-bold"
+                        >
+                          Simpan Perubahan
+                        </button>
+                      </div>
+                    </div>
+                  ) : (
+                    <p className="text-slate-600 text-sm leading-relaxed whitespace-pre-wrap mb-2">{post.content}</p>
+                  )}
                   
                   {post.attachment && (
                     <div className="mb-2">
@@ -192,12 +282,72 @@ export const Forum: React.FC = () => {
                   {((post.replies && post.replies.length > 0) || replyingToPostId === post.id) && (
                     <div className="mt-3 pl-3 border-l-2 border-slate-100 space-y-2">
                       {post.replies?.map(reply => (
-                        <div key={reply.id} className="bg-slate-50 p-2.5 rounded-xl">
+                        <div key={reply.id} className="bg-slate-50 p-2.5 rounded-xl group relative">
                           <div className="flex justify-between items-start mb-1">
-                            <h5 className="font-bold text-xs text-slate-800">{reply.author}</h5>
-                            <span className="text-[9px] text-slate-400 uppercase tracking-wider">{reply.timestamp}</span>
+                            <div className="flex items-center gap-2">
+                              <h5 className="font-bold text-xs text-slate-800">{reply.author}</h5>
+                              <span className="text-[9px] text-slate-400 uppercase tracking-wider">{reply.timestamp}</span>
+                            </div>
+                            <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                              {(currentUser?.id === reply.author_id) && (
+                                <button 
+                                  onClick={() => {
+                                    setEditingReplyId(reply.id);
+                                    setEditingReplyContent(reply.content);
+                                  }}
+                                  className="p-1 text-slate-400 hover:text-blue-600 transition-colors"
+                                  title="Edit Komentar"
+                                >
+                                  <Pencil size={10} />
+                                </button>
+                              )}
+                              {(currentUser?.id === reply.author_id || userRole === 'admin') && (
+                                <button 
+                                  onClick={() => {
+                                    if(window.confirm('Hapus komentar ini?')) {
+                                      handleDeleteReply(post.id, reply.id);
+                                    }
+                                  }}
+                                  className="p-1 text-slate-400 hover:text-red-600 transition-colors"
+                                  title="Hapus Komentar"
+                                >
+                                  <Trash2 size={10} />
+                                </button>
+                              )}
+                            </div>
                           </div>
-                          <p className="text-xs text-slate-600">{reply.content}</p>
+                          
+                          {editingReplyId === reply.id ? (
+                            <div className="mt-1">
+                              <input 
+                                type="text"
+                                value={editingReplyContent}
+                                onChange={(e) => setEditingReplyContent(e.target.value)}
+                                className="w-full px-2 py-1 bg-white border border-blue-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none mb-1.5"
+                                autoFocus
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') handleEditReply(post.id, reply.id);
+                                  if (e.key === 'Escape') setEditingReplyId(null);
+                                }}
+                              />
+                              <div className="flex justify-end gap-1.5">
+                                <button 
+                                  onClick={() => setEditingReplyId(null)}
+                                  className="text-slate-500 px-2 py-0.5 rounded hover:bg-slate-200 transition-all text-[10px] font-bold"
+                                >
+                                  Batal
+                                </button>
+                                <button 
+                                  onClick={() => handleEditReply(post.id, reply.id)}
+                                  className="bg-blue-900 text-white px-2 py-0.5 rounded hover:bg-blue-800 transition-all text-[10px] font-bold"
+                                >
+                                  Simpan
+                                </button>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-xs text-slate-600">{reply.content}</p>
+                          )}
                         </div>
                       ))}
                       

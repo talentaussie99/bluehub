@@ -13,6 +13,7 @@ import {
   LogOut, 
   CheckCircle2, 
   Bell,
+  Clock,
   User,
   Shield,
   Calendar,
@@ -20,7 +21,9 @@ import {
   Menu,
   X,
   Settings as SettingsIcon,
-  FileText
+  FileText,
+  Eye,
+  EyeOff
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'motion/react';
 import { AppProvider, useAppContext } from './context/AppContext';
@@ -44,6 +47,8 @@ import { Verifikasi } from './views/Verifikasi';
 import { Profil } from './views/Profil';
 import { Settings } from './views/Settings';
 import { Administrative } from './views/Administrative';
+import { PrivacyPolicy } from './views/PrivacyPolicy';
+import { TermsConditions } from './views/TermsConditions';
 
 function AppContent() {
   const { 
@@ -64,8 +69,18 @@ function AppContent() {
   const [loginError, setLoginError] = useState('');
   const [showNotifications, setShowNotifications] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
+  const [legalView, setLegalView] = useState<'privacy' | 'terms' | null>(null);
 
-  const unreadCount = notifikasiList.filter(n => !n.dibaca && (n.targetRole?.includes(userRole as any) || !n.targetRole || n.targetRole.length === 0)).length;
+  const displayNotifs = notifikasiList.filter(n => {
+    const isTarget = n.targetRole?.includes(userRole as any) || !n.targetRole || n.targetRole.length === 0;
+    if (userRole === 'security') {
+      return isTarget && n.pesan.toLowerCase().includes('laporan');
+    }
+    return isTarget;
+  });
+
+  const unreadCount = displayNotifs.filter(n => !n.dibaca).length;
 
   const onLogin = async (e: React.FormEvent) => {
     const success = await handleLogin(e, loginForm, setLoginError);
@@ -85,48 +100,74 @@ function AppContent() {
         className="min-h-screen w-screen flex items-center justify-center p-4 font-sans overflow-hidden bg-cover bg-center"
         style={{ backgroundImage: 'url(https://imgur.com/8mgT1TD.jpg)' }}
       >
-        <motion.div 
-          initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
-          className="backdrop-blur-xl bg-white/10 border border-white/20 p-8 rounded-3xl shadow-2xl w-full max-w-sm"
-        >
-          <div className="text-center mb-8">
-            <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
-              <Shield className="text-white" size={32} />
-            </div>
-            <h1 className="text-2xl font-black text-white tracking-tight">Blue Oasis Hub</h1>
-            <p className="text-white/70 text-xs mt-1 uppercase tracking-widest">Sistem Manajemen Warga Digital</p>
-          </div>
+        <AnimatePresence mode="wait">
+          {legalView === 'privacy' ? (
+            <PrivacyPolicy key="privacy" onBack={() => setLegalView(null)} />
+          ) : legalView === 'terms' ? (
+            <TermsConditions key="terms" onBack={() => setLegalView(null)} />
+          ) : (
+            <motion.div 
+              key="login"
+              initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }}
+              exit={{ opacity: 0, scale: 0.95 }}
+              className="backdrop-blur-xl bg-white/10 border border-white/20 p-8 rounded-3xl shadow-2xl w-full max-w-sm"
+            >
+              <div className="text-center mb-8">
+                <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center mx-auto mb-4 shadow-lg">
+                  <Shield className="text-white" size={32} />
+                </div>
+                <h1 className="text-2xl font-black text-white tracking-tight">Blue Oasis Hub</h1>
+                <p className="text-white/70 text-xs mt-1 uppercase tracking-widest">Sistem Manajemen Warga Digital</p>
+              </div>
 
-          <form onSubmit={onLogin} className="space-y-4">
-            <div>
-              <label className="block text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1 ml-1">Username</label>
-              <input 
-                type="text" 
-                value={loginForm.user} 
-                onChange={e => setLoginForm({...loginForm, user: e.target.value})}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all outline-none text-white placeholder-white/30 text-sm" 
-                placeholder="Masukkan username"
-              />
-            </div>
-            <div>
-              <label className="block text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1 ml-1">Password</label>
-              <input 
-                type="password" 
-                value={loginForm.pass} 
-                onChange={e => setLoginForm({...loginForm, pass: e.target.value})}
-                className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all outline-none text-white placeholder-white/30 text-sm" 
-                placeholder="Masukkan password"
-              />
-            </div>
-            {loginError && <p className="text-red-300 text-[11px] font-bold text-center bg-red-900/50 py-2 rounded-lg border border-red-500/30">{loginError}</p>}
-            <button type="submit" className="w-full bg-white text-blue-900 py-3.5 rounded-xl font-bold text-sm hover:bg-blue-50 transition-all shadow-lg active:scale-[0.98]">
-              Masuk ke Dashboard
-            </button>
-            <p className="text-center text-white/60 text-[10px] mt-4">
-              Lupa password? hubungi Admin
-            </p>
-          </form>
-        </motion.div>
+              <form onSubmit={onLogin} className="space-y-4">
+                <div>
+                  <label className="block text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1 ml-1">Username</label>
+                  <input 
+                    type="text" 
+                    value={loginForm.user} 
+                    onChange={e => setLoginForm({...loginForm, user: e.target.value})}
+                    className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all outline-none text-white placeholder-white/30 text-sm" 
+                    placeholder="Masukkan username"
+                  />
+                </div>
+                <div>
+                  <label className="block text-[10px] font-bold text-white/60 uppercase tracking-widest mb-1 ml-1">Password</label>
+                  <div className="relative">
+                    <input 
+                      type={showPassword ? "text" : "password"} 
+                      value={loginForm.pass} 
+                      onChange={e => setLoginForm({...loginForm, pass: e.target.value})}
+                      className="w-full px-4 py-3 bg-white/10 border border-white/20 rounded-xl focus:ring-2 focus:ring-white/50 focus:border-transparent transition-all outline-none text-white placeholder-white/30 text-sm pr-10" 
+                      placeholder="Masukkan password"
+                    />
+                    <button 
+                      type="button"
+                      onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition-colors"
+                    >
+                      {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                    </button>
+                  </div>
+                </div>
+                {loginError && <p className="text-red-300 text-[11px] font-bold text-center bg-red-900/50 py-2 rounded-lg border border-red-500/30">{loginError}</p>}
+                <button type="submit" className="w-full bg-white text-blue-900 py-3.5 rounded-xl font-bold text-sm hover:bg-blue-50 transition-all shadow-lg active:scale-[0.98]">
+                  Masuk
+                </button>
+                <div className="mt-6 flex flex-col items-center gap-2">
+                  <div className="flex gap-4 text-[10px] text-white/40 font-medium">
+                    <button type="button" onClick={() => setLegalView('privacy')} className="hover:text-white transition-colors">Kebijakan Privasi</button>
+                    <button type="button" onClick={() => setLegalView('terms')} className="hover:text-white transition-colors">Syarat & Ketentuan</button>
+                  </div>
+                  <p className="text-white/30 text-[9px] uppercase tracking-widest">© 2026 Blue Oasis Hub. All Rights Reserved.</p>
+                </div>
+                <p className="text-center text-white/60 text-[10px] mt-4">
+                  Lupa password? hubungi Admin
+                </p>
+              </form>
+            </motion.div>
+          )}
+        </AnimatePresence>
       </div>
     );
   }
@@ -171,19 +212,25 @@ function AppContent() {
           </div>
 
           <nav className="flex-1 px-1.5 space-y-1 overflow-y-auto custom-scrollbar">
-            <MenuBtn icon={<LayoutDashboard size={12} />} label="Dashboard" active={activeMenu === 'dashboard'} onClick={() => { setActiveMenu('dashboard'); setIsSidebarOpen(false); }} />
+            {userRole !== 'security' && (
+              <MenuBtn icon={<LayoutDashboard size={12} />} label="Dashboard" active={activeMenu === 'dashboard'} onClick={() => { setActiveMenu('dashboard'); setIsSidebarOpen(false); }} />
+            )}
             
-            <div className="pt-1 pb-0.5 px-2">
-              <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Keuangan</p>
-            </div>
-            <MenuBtn icon={<Receipt size={12} />} label="IPL" active={activeMenu === 'ipl'} onClick={() => { setActiveMenu('ipl'); setIsSidebarOpen(false); }} />
-            <MenuBtn icon={<Wallet size={12} />} label="Kas" active={activeMenu === 'kas'} onClick={() => { setActiveMenu('kas'); setIsSidebarOpen(false); }} />
-            
-            <div className="pt-1 pb-0.5 px-2">
-              <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Komunitas</p>
-            </div>
-            <MenuBtn icon={<MessageSquare size={12} />} label="Forum Warga" active={activeMenu === 'forum'} onClick={() => { setActiveMenu('forum'); setIsSidebarOpen(false); }} />
-            <MenuBtn icon={<Calendar size={12} />} label="Acara" active={activeMenu === 'acara'} onClick={() => { setActiveMenu('acara'); setIsSidebarOpen(false); }} />
+            {userRole !== 'security' && (
+              <>
+                <div className="pt-1 pb-0.5 px-2">
+                  <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Keuangan</p>
+                </div>
+                <MenuBtn icon={<Receipt size={12} />} label="IPL" active={activeMenu === 'ipl'} onClick={() => { setActiveMenu('ipl'); setIsSidebarOpen(false); }} />
+                <MenuBtn icon={<Wallet size={12} />} label="Kas" active={activeMenu === 'kas'} onClick={() => { setActiveMenu('kas'); setIsSidebarOpen(false); }} />
+                
+                <div className="pt-1 pb-0.5 px-2">
+                  <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Komunitas</p>
+                </div>
+                <MenuBtn icon={<MessageSquare size={12} />} label="Forum Warga" active={activeMenu === 'forum'} onClick={() => { setActiveMenu('forum'); setIsSidebarOpen(false); }} />
+                <MenuBtn icon={<Calendar size={12} />} label="Acara" active={activeMenu === 'acara'} onClick={() => { setActiveMenu('acara'); setIsSidebarOpen(false); }} />
+              </>
+            )}
             
             <div className="pt-1 pb-0.5 px-2">
               <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Layanan</p>
@@ -197,14 +244,15 @@ function AppContent() {
             <MenuBtn icon={<Users size={12} />} label="Data Warga" active={activeMenu === 'warga'} onClick={() => { setActiveMenu('warga'); setIsSidebarOpen(false); }} />
             <MenuBtn icon={<Shield size={12} />} label="Data Security" active={activeMenu === 'data_security'} onClick={() => { setActiveMenu('data_security'); setIsSidebarOpen(false); }} />
             
-            {userRole === 'warga' && (
-              <MenuBtn icon={<FileText size={12} />} label="Administrative" active={activeMenu === 'administrative'} onClick={() => { setActiveMenu('administrative'); setIsSidebarOpen(false); }} />
+            {userRole === 'security' && (
+              <>
+                <MenuBtn icon={<CheckCircle2 size={12} />} label="Absensi" active={activeMenu === 'absensi'} onClick={() => { setActiveMenu('absensi'); setIsSidebarOpen(false); }} />
+                <MenuBtn icon={<SettingsIcon size={12} />} label="Settings" active={activeMenu === 'settings'} onClick={() => { setActiveMenu('settings'); setIsSidebarOpen(false); }} />
+              </>
             )}
 
-            <MenuBtn icon={<SettingsIcon size={12} />} label="Settings" active={activeMenu === 'settings'} onClick={() => { setActiveMenu('settings'); setIsSidebarOpen(false); }} />
-
-            {userRole === 'security' && (
-              <MenuBtn icon={<CheckCircle2 size={12} />} label="Absensi" active={activeMenu === 'absensi'} onClick={() => { setActiveMenu('absensi'); setIsSidebarOpen(false); }} />
+            {userRole === 'warga' && (
+              <MenuBtn icon={<FileText size={12} />} label="Administrative" active={activeMenu === 'administrative'} onClick={() => { setActiveMenu('administrative'); setIsSidebarOpen(false); }} />
             )}
 
             {userRole === 'admin' && (
@@ -216,6 +264,14 @@ function AppContent() {
                   </span>
                 )}
               </div>
+            )}
+
+            {userRole === 'warga' && (
+              <MenuBtn icon={<SettingsIcon size={12} />} label="Settings" active={activeMenu === 'settings'} onClick={() => { setActiveMenu('settings'); setIsSidebarOpen(false); }} />
+            )}
+
+            {userRole === 'admin' && (
+              <MenuBtn icon={<SettingsIcon size={12} />} label="Settings" active={activeMenu === 'settings'} onClick={() => { setActiveMenu('settings'); setIsSidebarOpen(false); }} />
             )}
           </nav>
 
@@ -258,6 +314,10 @@ function AppContent() {
                 <Menu size={20} />
               </button>
               <h2 className="text-base font-bold text-slate-800 capitalize leading-tight">{activeMenu.replace('_', ' ')}</h2>
+              <p className="hidden sm:flex items-center gap-1.5 text-[10px] font-bold text-slate-400 uppercase tracking-widest ml-2 border-l border-slate-200 pl-3">
+                <Calendar size={12} className="text-blue-500" />
+                {new Date().toLocaleDateString('id-ID', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}
+              </p>
             </div>
 
             <div className="flex items-center gap-3">
@@ -278,23 +338,42 @@ function AppContent() {
                 <AnimatePresence>
                   {showNotifications && (
                     <motion.div 
-                      initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}
-                      className="absolute right-0 mt-2 w-64 bg-white rounded-xl shadow-2xl border border-slate-100 overflow-hidden z-50"
+                      initial={{ opacity: 0, y: 10, scale: 0.95 }} 
+                      animate={{ opacity: 1, y: 0, scale: 1 }} 
+                      exit={{ opacity: 0, y: 10, scale: 0.95 }}
+                      className="absolute right-0 mt-3 w-[300px] sm:w-[400px] bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-50 origin-top-right"
                     >
-                      <div className="p-2.5 border-b border-slate-50 bg-slate-50/50 flex justify-between items-center">
-                        <h4 className="font-bold text-[11px]">Notifikasi</h4>
-                        <span className="text-[8px] bg-blue-100 text-blue-600 px-1.5 py-0.5 rounded-full font-bold">{unreadCount} Baru</span>
+                      <div className="p-4 border-b border-slate-100 bg-slate-50/80 flex justify-between items-center">
+                        <h4 className="font-bold text-sm text-slate-800">Notifikasi</h4>
+                        <span className="text-[10px] bg-blue-600 text-white px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">{unreadCount} Baru</span>
                       </div>
-                      <div className="max-h-56 overflow-y-auto">
-                        {notifikasiList.filter(n => n.targetRole?.includes(userRole as any) || !n.targetRole || n.targetRole.length === 0).length > 0 ? notifikasiList.filter(n => n.targetRole?.includes(userRole as any) || !n.targetRole || n.targetRole.length === 0).map(notif => (
-                          <div key={notif.id} className={`p-2.5 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer ${!notif.dibaca ? 'bg-blue-50/30' : ''}`}>
-                            <p className="text-[10px] text-slate-700 mb-0.5 leading-relaxed">{notif.pesan}</p>
-                            <span className="text-[8px] text-slate-400 font-medium">{notif.waktu}</span>
+                      <div className="max-h-[450px] overflow-y-auto custom-scrollbar">
+                        {displayNotifs.length > 0 ? (
+                          displayNotifs.map(notif => (
+                            <div key={notif.id} className={`p-4 border-b border-slate-50 hover:bg-slate-50 transition-colors cursor-pointer group ${!notif.dibaca ? 'bg-blue-50/40' : ''}`}>
+                              <p className={`text-sm text-slate-700 mb-1 leading-relaxed ${!notif.dibaca ? 'font-semibold' : 'font-medium'}`}>{notif.pesan}</p>
+                              <div className="flex items-center gap-1.5 text-slate-400">
+                                <Clock size={10} />
+                                <span className="text-[11px] font-medium">{notif.waktu}</span>
+                              </div>
+                            </div>
+                          ))
+                        ) : (
+                          <div className="p-10 text-center flex flex-col items-center justify-center gap-2">
+                            <div className="w-12 h-12 bg-slate-100 rounded-full flex items-center justify-center text-slate-300">
+                              <Bell size={20} />
+                            </div>
+                            <p className="text-slate-400 text-xs font-medium italic">
+                              {userRole === 'security' ? 'Belum ada notifikasi laporan saat ini' : 'Tidak ada notifikasi baru'}
+                            </p>
                           </div>
-                        )) : (
-                          <div className="p-5 text-center text-slate-400 text-[9px] italic">Tidak ada notifikasi</div>
                         )}
                       </div>
+                      {notifikasiList.length > 0 && (
+                        <button className="w-full py-3 text-center text-xs font-bold text-blue-600 hover:bg-blue-50 transition-colors border-t border-slate-100">
+                          Lihat Semua Aktivitas
+                        </button>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>

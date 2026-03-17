@@ -65,6 +65,8 @@ interface AppContextType {
   setShowBonusModal: (show: boolean) => void;
   forumTab: 'Umum' | 'Jual-Beli';
   setForumTab: (tab: 'Umum' | 'Jual-Beli') => void;
+  showForumForm: boolean;
+  setShowForumForm: (show: boolean) => void;
   newPost: string;
   setNewPost: (post: string) => void;
   postAttachment: any;
@@ -204,7 +206,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       if (posts) {
         const postsWithReplies = posts.map(post => ({
           ...post,
-          replies: replies ? replies.filter(r => r.post_id === post.id) : []
+          author: post.author_nama || 'Warga Blue Oasis',
+          replies: replies ? replies.filter(r => r.post_id === post.id).map(r => ({
+            ...r,
+            author: r.author_nama || 'Warga Blue Oasis',
+            timestamp: new Date(r.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+          })) : []
         }));
         setForumPosts(postsWithReplies);
       }
@@ -235,7 +242,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [paymentType, setPaymentType] = useState<'IPL' | 'Kas' | 'Bonus'>('IPL');
   const [paymentForm, setPaymentForm] = useState({
     bulan: new Date().getMonth(),
-    tahun: new Date().getFullYear(),
+    tahun: 2026,
     nominal: 0,
     keterangan: '',
     bukti: ''
@@ -253,12 +260,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [showBonusModal, setShowBonusModal] = useState(false);
 
   const [forumTab, setForumTab] = useState<'Umum' | 'Jual-Beli'>('Umum');
+  const [showForumForm, setShowForumForm] = useState(false);
   const [newPost, setNewPost] = useState('');
   const [postAttachment, setPostAttachment] = useState<any>(null);
   const [showPollForm, setShowPollForm] = useState(false);
   const [pollForm, setPollForm] = useState({ question: '', opt1: '', opt2: '' });
   const [replyingToPostId, setReplyingToPostId] = useState<string | null>(null);
   const [replyContent, setReplyContent] = useState('');
+  const [editingPostId, setEditingPostId] = useState<string | null>(null);
+  const [editingPostContent, setEditingPostContent] = useState('');
+  const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
+  const [editingReplyContent, setEditingReplyContent] = useState('');
 
   const [editingWarga, setEditingWarga] = useState<Warga | null>(null);
   const [wargaForm, setWargaForm] = useState<any>({ 
@@ -284,7 +296,8 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     keluhan: '',
     isAnonim: false,
     foto: '',
-    fotoUrl: ''
+    fotoUrl: '',
+    mediaType: ''
   });
 
   const [showAcaraModal, setShowAcaraModal] = useState(false);
@@ -396,9 +409,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const handleLaporanFoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
       const file = e.target.files[0];
+      const mediaType = file.type.startsWith('video/') ? 'video' : 'image';
       const reader = new FileReader();
       reader.onloadend = () => {
-        setLaporanForm({ ...laporanForm, foto: file.name, fotoUrl: reader.result as string });
+        setLaporanForm({ 
+          ...laporanForm, 
+          foto: file.name, 
+          fotoUrl: reader.result as string,
+          mediaType: mediaType
+        });
       };
       reader.readAsDataURL(file);
     }
@@ -576,7 +595,12 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const handleSaveSecurity = async (e: React.FormEvent) => {
     e.preventDefault();
     if (editingSecurity) {
-      const { error } = await supabase.from('profiles').update(securityForm).eq('id', editingSecurity.id);
+      const updateData = {
+        nama: securityForm.nama,
+        no_wa: securityForm.noTelp,
+        shift: securityForm.shift
+      };
+      const { error } = await supabase.from('profiles').update(updateData).eq('id', editingSecurity.id);
       if (!error) {
         setSecurityList(securityList.map(s => s.id === editingSecurity.id ? { ...s, ...securityForm } as Security : s));
         addNotification('Data security berhasil diperbarui', 'success', ['admin']);
@@ -584,15 +608,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     } else {
       const kodeAkses = `sec.${securityForm.nama.split(' ')[0].toLowerCase()}`;
       const newSec = {
-        ...securityForm,
+        nama: securityForm.nama,
+        no_wa: securityForm.noTelp,
+        shift: securityForm.shift,
         role: 'security',
         kode_akses: kodeAkses,
-        status: 'Hadir'
+        status: 'Off',
+        created_at: new Date().toISOString()
       };
       
       const { data, error } = await supabase.from('profiles').insert([newSec]).select();
       if (data) {
-        setSecurityList([...securityList, data[0]]);
+        setSecurityList([...securityList, {
+          id: data[0].id,
+          nama: data[0].nama,
+          noTelp: data[0].no_wa,
+          shift: data[0].shift,
+          status: data[0].status,
+          foto: data[0].foto
+        }]);
         addNotification(`Security baru berhasil ditambahkan. Kode Akses: ${kodeAkses}`, 'success', ['admin']);
       }
     }
@@ -654,12 +688,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     
     const { data, error } = await supabase.from('forum_posts').insert([postData]).select();
-    if (data) {
-      setForumPosts([data[0], ...forumPosts]);
+    if (data && data.length > 0) {
+      const newPostObj = {
+        ...data[0],
+        author: data[0].author_nama || 'Warga Blue Oasis',
+        replies: []
+      };
+      setForumPosts([newPostObj, ...forumPosts]);
       setNewPost('');
       setPostAttachment(null);
       setShowPollForm(false);
       setPollForm({question: '', opt1: '', opt2: ''});
+      setShowForumForm(false);
+      addNotification(`Utas baru di Forum ${forumTab}: ${newPost.substring(0, 30)}...`, 'info', ['admin', 'warga']);
       addNotification('Postingan forum berhasil dikirim', 'success');
     }
   };
@@ -675,10 +716,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     
     const { data, error } = await supabase.from('forum_replies').insert([replyData]).select();
-    if (data) {
+    if (data && data.length > 0) {
+      const newReply = {
+        ...data[0],
+        author: data[0].author_nama || 'Warga Blue Oasis',
+        timestamp: new Date(data[0].created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+      };
       setForumPosts(forumPosts.map(p => {
         if (p.id === postId) {
-          return { ...p, replies: [...(p.replies || []), data[0]] };
+          return { ...p, replies: [...(p.replies || []), newReply] };
         }
         return p;
       }));
@@ -732,6 +778,32 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
+  const handleEditPost = async (postId: string, content: string) => {
+    const { error } = await supabase.from('forum_posts').update({ content }).eq('id', postId);
+    if (!error) {
+      setForumPosts(forumPosts.map(p => p.id === postId ? { ...p, content } : p));
+      setEditingPostId(null);
+      addNotification('Postingan berhasil diperbarui', 'success');
+    }
+  };
+
+  const handleEditReply = async (postId: string, replyId: string, content: string) => {
+    const { error } = await supabase.from('forum_replies').update({ content }).eq('id', replyId);
+    if (!error) {
+      setForumPosts(forumPosts.map(p => {
+        if (p.id === postId) {
+          return {
+            ...p,
+            replies: p.replies?.map(r => r.id === replyId ? { ...r, content } : r)
+          };
+        }
+        return p;
+      }));
+      setEditingReplyId(null);
+      addNotification('Balasan berhasil diperbarui', 'success');
+    }
+  };
+
   const saldoKas = useMemo(() => {
     const totalKasMasuk = payments
       .filter(p => (p.tipe === 'Kas' || p.tipe === 'Bonus') && p.status === 'Lunas')
@@ -765,12 +837,25 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   };
 
   const markNotificationsAsRead = async () => {
-    const unreadNotifs = notifikasiList.filter(n => !n.dibaca);
+    const unreadNotifs = notifikasiList.filter(n => {
+      const isTarget = !n.dibaca && (n.targetRole?.includes(userRole as any) || !n.targetRole || n.targetRole.length === 0);
+      if (userRole === 'security') {
+        return isTarget && n.pesan.toLowerCase().includes('laporan');
+      }
+      return isTarget;
+    });
     if (unreadNotifs.length === 0) return;
 
+    // Optimistic update
+    setNotifikasiList(prev => prev.map(n => {
+      const isTarget = n.targetRole?.includes(userRole as any) || !n.targetRole || n.targetRole.length === 0;
+      const shouldMark = userRole === 'security' ? (isTarget && n.pesan.toLowerCase().includes('laporan')) : isTarget;
+      return shouldMark ? { ...n, dibaca: true } : n;
+    }));
+
     const { error } = await supabase.from('notifikasi').update({ dibaca: true }).in('id', unreadNotifs.map(n => n.id));
-    if (!error) {
-      setNotifikasiList(prev => prev.map(n => ({ ...n, dibaca: true })));
+    if (error) {
+      console.error('Error marking notifications as read:', error);
     }
   };
 
@@ -832,13 +917,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       wargaBonusForm, setWargaBonusForm,
       showBonusModal, setShowBonusModal,
       forumTab, setForumTab,
+      showForumForm, setShowForumForm,
       newPost, setNewPost,
       postAttachment, setPostAttachment,
       showPollForm, setShowPollForm,
       pollForm, setPollForm,
       replyingToPostId, setReplyingToPostId,
       replyContent, setReplyContent,
+      editingPostId, setEditingPostId,
+      editingPostContent, setEditingPostContent,
+      editingReplyId, setEditingReplyId,
+      editingReplyContent, setEditingReplyContent,
       handleVote,
+      handleEditPost, handleEditReply,
       editingWarga, setEditingWarga,
       wargaForm, setWargaForm,
       showWargaModal, setShowWargaModal,

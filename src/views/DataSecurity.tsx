@@ -1,10 +1,17 @@
 import React from 'react';
 import { motion } from 'motion/react';
-import { Shield, MessageSquare } from 'lucide-react';
+import { Shield, MessageSquare, UserPlus, Pencil, Trash2 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 
 export const DataSecurity: React.FC = () => {
-  const { userRole, securityList } = useAppContext();
+  const { 
+    userRole, 
+    securityList, 
+    setShowSecurityModal, 
+    setEditingSecurity, 
+    setSecurityForm,
+    handleDeleteSecurity 
+  } = useAppContext();
 
   return (
     <motion.div 
@@ -20,6 +27,19 @@ export const DataSecurity: React.FC = () => {
             <Shield size={18} className="text-blue-600" />
             Data Security
           </h3>
+          {userRole === 'admin' && (
+            <button 
+              onClick={() => {
+                setEditingSecurity(null);
+                setSecurityForm({ nama: '', noTelp: '', shift: 'Pagi' });
+                setShowSecurityModal(true);
+              }}
+              className="bg-blue-900 text-white px-3 py-1.5 rounded-xl font-bold hover:bg-blue-800 transition-all flex items-center gap-2 text-xs shadow-lg shadow-blue-900/20"
+            >
+              <UserPlus size={14} />
+              Tambah Security
+            </button>
+          )}
         </div>
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
@@ -29,7 +49,7 @@ export const DataSecurity: React.FC = () => {
                 <th className="px-3 py-1.5 font-semibold">No. Telepon</th>
                 <th className="px-3 py-1.5 font-semibold">Shift</th>
                 <th className="px-3 py-1.5 font-semibold">Status</th>
-                {(userRole === 'warga' || userRole === 'admin') && <th className="px-3 py-1.5 font-semibold text-right">Aksi</th>}
+                <th className="px-3 py-1.5 font-semibold text-right">Aksi</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
@@ -45,28 +65,52 @@ export const DataSecurity: React.FC = () => {
                       {sec.status}
                     </span>
                   </td>
-                  {(userRole === 'warga' || userRole === 'admin') && (
-                    <td className="px-3 py-1.5 text-right">
-                      <a 
-                        href={sec.status === 'Hadir' || userRole === 'admin' ? `https://wa.me/${sec.noTelp.replace(/\D/g, '')}?text=Halo%20Pak%20Security,%20saya%20warga%20Blue%20Oasis%20ingin%20melaporkan%20sesuatu%20yang%20mendesak.` : '#'}
-                        onClick={(e) => {
-                          if (!(sec.status === 'Hadir' || userRole === 'admin')) {
-                            e.preventDefault();
-                            alert('Security sedang tidak bertugas.');
-                          }
-                        }}
-                        target={sec.status === 'Hadir' || userRole === 'admin' ? "_blank" : undefined}
-                        rel="noopener noreferrer"
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-bold transition-colors ${
-                          sec.status === 'Hadir' || userRole === 'admin' 
-                            ? 'bg-emerald-500 text-white hover:bg-emerald-600' 
-                            : 'bg-slate-200 text-slate-400 cursor-not-allowed'
-                        }`}
-                      >
-                        <MessageSquare size={12} /> Hubungi
-                      </a>
-                    </td>
-                  )}
+                  <td className="px-3 py-1.5 text-right">
+                    <div className="flex items-center justify-end gap-2">
+                      {userRole === 'admin' && (
+                        <>
+                          <button 
+                            onClick={() => {
+                              setEditingSecurity(sec);
+                              setSecurityForm({ nama: sec.nama, noTelp: sec.noTelp, shift: sec.shift });
+                              setShowSecurityModal(true);
+                            }}
+                            className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                            title="Edit"
+                          >
+                            <Pencil size={14} />
+                          </button>
+                          <button 
+                            onClick={() => handleDeleteSecurity(sec.id)}
+                            className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                            title="Hapus"
+                          >
+                            <Trash2 size={14} />
+                          </button>
+                        </>
+                      )}
+                      {(userRole === 'warga' || userRole === 'admin') && (
+                        <a 
+                          href={sec.status === 'Hadir' || userRole === 'admin' ? `https://wa.me/${sec.noTelp.replace(/\D/g, '')}?text=Halo%20Pak%20Security,%20saya%20warga%20Blue%20Oasis%20ingin%20melaporkan%20sesuatu%20yang%20mendesak.` : '#'}
+                          onClick={(e) => {
+                            if (!(sec.status === 'Hadir' || userRole === 'admin')) {
+                              e.preventDefault();
+                              alert('Security sedang tidak bertugas.');
+                            }
+                          }}
+                          target={sec.status === 'Hadir' || userRole === 'admin' ? "_blank" : undefined}
+                          rel="noopener noreferrer"
+                          className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-lg text-[11px] font-bold transition-colors ${
+                            sec.status === 'Hadir' || userRole === 'admin' 
+                              ? 'bg-emerald-500 text-white hover:bg-emerald-600' 
+                              : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                          }`}
+                        >
+                          <MessageSquare size={12} /> Hubungi
+                        </a>
+                      )}
+                    </div>
+                  </td>
                 </tr>
               ))}
             </tbody>

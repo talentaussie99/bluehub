@@ -87,23 +87,34 @@ export const Lapor: React.FC = () => {
               <textarea required value={laporanForm.keluhan} onChange={e => setLaporanForm({...laporanForm, keluhan: e.target.value})} className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-base focus:ring-2 focus:ring-blue-500 focus:outline-none h-20 resize-none" placeholder="Jelaskan kendala..."></textarea>
             </div>
             <div>
-              <label className="block text-xs font-bold text-slate-500 uppercase mb-0.5">Upload Foto (Opsional)</label>
-              <div className="grid grid-cols-2 gap-2">
-                <label className="border border-dashed border-slate-300 rounded-lg p-2 text-center hover:bg-slate-50 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1">
-                  <ImageIcon size={16} className="text-slate-400" />
-                  <span className="text-xs text-slate-500 font-medium">Galeri</span>
-                  <input type="file" className="hidden" accept="image/*" onChange={handleLaporanFoto} />
+              <label className="block text-xs font-bold text-slate-500 uppercase mb-1">Upload Media (Opsional)</label>
+              <div className="grid grid-cols-3 gap-2">
+                <label className="border border-dashed border-slate-300 rounded-xl p-2 text-center hover:bg-slate-50 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 min-h-[60px]">
+                  <ImageIcon size={18} className="text-slate-400" />
+                  <span className="text-[9px] text-slate-500 font-bold uppercase">Galeri</span>
+                  <input type="file" className="hidden" accept="image/*,video/*" onChange={handleLaporanFoto} />
                 </label>
-                <label className="border border-dashed border-slate-300 rounded-lg p-2 text-center hover:bg-slate-50 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1">
-                  <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
-                  <span className="text-xs text-slate-500 font-medium">Kamera</span>
+                <label className="border border-dashed border-slate-300 rounded-xl p-2 text-center hover:bg-slate-50 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 min-h-[60px]">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><path d="M14.5 4h-5L7 7H4a2 2 0 0 0-2 2v9a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2h-3l-2.5-3z"/><circle cx="12" cy="13" r="3"/></svg>
+                  <span className="text-[9px] text-slate-500 font-bold uppercase">Foto</span>
                   <input type="file" className="hidden" accept="image/*" capture="environment" onChange={handleLaporanFoto} />
+                </label>
+                <label className="border border-dashed border-slate-300 rounded-xl p-2 text-center hover:bg-slate-50 transition-colors cursor-pointer flex flex-col items-center justify-center gap-1 min-h-[60px]">
+                  <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="text-slate-400"><path d="m16 13 5.223 3.482a.5.5 0 0 0 .777-.416V7.934a.5.5 0 0 0-.777-.416L16 11"/><rect x="2" y="6" width="14" height="12" rx="2"/></svg>
+                  <span className="text-[9px] text-slate-500 font-bold uppercase">Video</span>
+                  <input type="file" className="hidden" accept="video/*" capture="environment" onChange={handleLaporanFoto} />
                 </label>
               </div>
               {laporanForm.fotoUrl && (
-                <div className="mt-2 relative inline-block">
-                  <img src={laporanForm.fotoUrl} alt="Preview" className="h-16 rounded-lg border border-slate-200 object-cover" />
-                  <button type="button" onClick={() => setLaporanForm({...laporanForm, foto: '', fotoUrl: ''})} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-0.5 shadow-sm hover:bg-red-600 transition-colors"><XCircle size={12}/></button>
+                <div className="mt-3 relative inline-block">
+                  {laporanForm.mediaType === 'video' ? (
+                    <video src={laporanForm.fotoUrl} className="h-24 rounded-xl border border-slate-200" controls />
+                  ) : (
+                    <img src={laporanForm.fotoUrl} alt="Preview" className="h-24 rounded-xl border border-slate-200 object-cover" />
+                  )}
+                  <button type="button" onClick={() => setLaporanForm({...laporanForm, foto: '', fotoUrl: '', mediaType: ''})} className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 shadow-lg hover:bg-red-600 transition-colors">
+                    <XCircle size={14}/>
+                  </button>
                 </div>
               )}
             </div>

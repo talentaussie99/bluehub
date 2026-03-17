@@ -10,7 +10,8 @@ export const Absensi: React.FC = () => {
     absensiSecurity, 
     setAbsensiSecurity, 
     securityList, 
-    setSecurityList 
+    setSecurityList,
+    handleUpdateAbsensi
   } = useAppContext();
 
   if (!currentUser) return null;
@@ -54,7 +55,7 @@ export const Absensi: React.FC = () => {
                     waktuIn: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })
                   };
                   setAbsensiSecurity([...absensiSecurity, newAbsen]);
-                  setSecurityList(securityList.map(s => s.id === currentUser.id ? {...s, status: 'Hadir'} : s));
+                  handleUpdateAbsensi(currentUser.id, 'Hadir');
                   alert('Berhasil Absen Masuk');
                 }}
                 className="bg-emerald-500 text-white px-4 py-1.5 rounded-xl font-bold hover:bg-emerald-600 transition-colors shadow-lg shadow-emerald-500/30 text-xs"
@@ -76,7 +77,7 @@ export const Absensi: React.FC = () => {
                   setAbsensiSecurity(absensiSecurity.map(a => 
                     a.id === existing.id ? {...a, waktuOut: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' })} : a
                   ));
-                  setSecurityList(securityList.map(s => s.id === currentUser.id ? {...s, status: 'Off'} : s));
+                  handleUpdateAbsensi(currentUser.id, 'Off');
                   alert('Berhasil Absen Keluar');
                 }}
                 className="bg-red-500 text-white px-4 py-1.5 rounded-xl font-bold hover:bg-red-600 transition-colors shadow-lg shadow-red-500/30 text-xs"
