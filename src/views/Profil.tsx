@@ -74,7 +74,7 @@ export const Profil: React.FC = () => {
             {!isEditing && (
               <button 
                 onClick={() => setIsEditing(true)}
-                className="mb-2 px-4 py-2 bg-white/20 hover:bg-white/30 backdrop-blur-md text-white rounded-lg transition-all border border-white/20 font-bold text-xs"
+                className="mb-2 px-4 py-2 bg-blue-900 hover:bg-blue-800 text-white rounded-lg transition-all shadow-lg shadow-blue-900/20 font-bold text-xs"
               >
                 Edit Profil
               </button>
@@ -91,7 +91,7 @@ export const Profil: React.FC = () => {
                   type="text"
                   value={editForm.nama}
                   onChange={e => setEditForm({...editForm, nama: e.target.value})}
-                  className="w-full px-4 py-2 bg-white border border-slate-300 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none font-semibold"
+                  className="w-full px-4 py-2 bg-slate-50 border border-slate-300 rounded-xl text-sm text-slate-900 focus:ring-2 focus:ring-blue-500 focus:outline-none font-bold"
                   placeholder="Masukkan nama lengkap"
                   required
                 />

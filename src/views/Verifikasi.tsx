@@ -70,7 +70,7 @@ export const Verifikasi: React.FC = () => {
                     </td>
                     <td className="px-4 py-2">
                       <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold mr-1.5 ${p.tipe === 'IPL' ? 'bg-sky-100 text-sky-700' : p.tipe === 'Kas' ? 'bg-emerald-100 text-emerald-700' : 'bg-purple-100 text-purple-700'}`}>{p.tipe}</span>
-                      {p.tipe === 'Bonus' ? p.keterangan : `${MONTHS[p.bulan]} ${p.tahun}`}
+                      {p.tipe === 'Bonus' ? (p.keterangan || 'Sumbangan') : `${MONTHS[p.bulan]} ${p.tahun}`}
                     </td>
                     <td className="px-4 py-2 font-bold text-slate-700">Rp {p.nominal.toLocaleString()}</td>
                     <td className="px-4 py-2">

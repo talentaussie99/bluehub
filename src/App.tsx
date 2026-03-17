@@ -341,7 +341,7 @@ function AppContent() {
                       initial={{ opacity: 0, y: 10, scale: 0.95 }} 
                       animate={{ opacity: 1, y: 0, scale: 1 }} 
                       exit={{ opacity: 0, y: 10, scale: 0.95 }}
-                      className="absolute right-0 mt-3 w-[300px] sm:w-[400px] bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-50 origin-top-right"
+                      className="fixed sm:absolute left-1/2 -translate-x-1/2 sm:left-auto sm:right-0 sm:translate-x-0 top-16 sm:top-full mt-3 w-[calc(100%-2rem)] sm:w-[400px] bg-white rounded-2xl shadow-2xl border border-slate-100 overflow-hidden z-50 origin-top sm:origin-top-right"
                     >
                       <div className="p-4 border-b border-slate-100 bg-slate-50/80 flex justify-between items-center">
                         <h4 className="font-bold text-sm text-slate-800">Notifikasi</h4>

@@ -293,7 +293,7 @@ export const Kas: React.FC = () => {
                   onClick={() => {
                     const data = payments.filter(p => p.tipe === 'Bonus').map(p => [
                       p.wargaNama,
-                      p.keterangan,
+                      p.keterangan || '-',
                       p.nominal.toLocaleString(),
                       p.status
                     ]);
@@ -320,7 +320,7 @@ export const Kas: React.FC = () => {
               <form className="space-y-3" onSubmit={(e) => {
                 e.preventDefault();
                 const targetBill = bonusBills.find(b => b.id === wargaBonusForm.keteranganId);
-                if (targetBill && wargaBonusForm.namaWarga) {
+                if (targetBill && wargaBonusForm.namaWarga && wargaBonusForm.nominal) {
                   const newPayment: Payment = {
                     id: `p_${Date.now()}`,
                     wargaId: currentUser?.id || 'w_custom',
@@ -331,7 +331,7 @@ export const Kas: React.FC = () => {
                     tipe: 'Bonus',
                     status: 'Menunggu',
                     tanggalUpload: new Date().toISOString().split('T')[0],
-                    keterangan: targetBill.keterangan,
+                    keterangan: targetBill.keterangan || 'Sumbangan',
                     buktiUrl: wargaBonusForm.bukti
                   };
                   setPayments([newPayment, ...payments]);
@@ -422,7 +422,7 @@ export const Kas: React.FC = () => {
                       <div className="font-bold text-xs">{p.wargaNama}</div>
                       <div className="text-[9px] text-slate-400">{p.tanggalUpload}</div>
                     </td>
-                    <td className="px-4 py-2 text-xs">{p.keterangan}</td>
+                    <td className="px-4 py-2 text-xs">{p.keterangan || '-'}</td>
                     <td className="px-4 py-2 font-bold text-xs">Rp {p.nominal.toLocaleString()}</td>
                     <td className="px-4 py-2">
                       <span className={`px-2 py-0.5 rounded-full text-[9px] font-bold uppercase ${

@@ -84,7 +84,7 @@ export const Settings: React.FC = () => {
                           type="text" 
                           value={adminSettings.bankIPL.bankName}
                           onChange={e => setAdminSettings({...adminSettings, bankIPL: {...adminSettings.bankIPL, bankName: e.target.value}})}
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
                         />
                       </div>
                       <div>
@@ -93,7 +93,7 @@ export const Settings: React.FC = () => {
                           type="text" 
                           value={adminSettings.bankIPL.accountNumber}
                           onChange={e => setAdminSettings({...adminSettings, bankIPL: {...adminSettings.bankIPL, accountNumber: e.target.value}})}
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
                         />
                       </div>
                       <div>
@@ -102,7 +102,7 @@ export const Settings: React.FC = () => {
                           type="text" 
                           value={adminSettings.bankIPL.accountHolder}
                           onChange={e => setAdminSettings({...adminSettings, bankIPL: {...adminSettings.bankIPL, accountHolder: e.target.value}})}
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
                         />
                       </div>
                     </div>
@@ -118,7 +118,7 @@ export const Settings: React.FC = () => {
                           type="text" 
                           value={adminSettings.bankKas.bankName}
                           onChange={e => setAdminSettings({...adminSettings, bankKas: {...adminSettings.bankKas, bankName: e.target.value}})}
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
                         />
                       </div>
                       <div>
@@ -127,7 +127,7 @@ export const Settings: React.FC = () => {
                           type="text" 
                           value={adminSettings.bankKas.accountNumber}
                           onChange={e => setAdminSettings({...adminSettings, bankKas: {...adminSettings.bankKas, accountNumber: e.target.value}})}
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
                         />
                       </div>
                       <div>
@@ -136,7 +136,7 @@ export const Settings: React.FC = () => {
                           type="text" 
                           value={adminSettings.bankKas.accountHolder}
                           onChange={e => setAdminSettings({...adminSettings, bankKas: {...adminSettings.bankKas, accountHolder: e.target.value}})}
-                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                          className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
                         />
                       </div>
                     </div>

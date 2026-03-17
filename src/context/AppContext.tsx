@@ -125,6 +125,8 @@ interface AppContextType {
   handleVerifyPayment: (id: string, status: 'Lunas' | 'Ditolak') => void;
   handleDeletePayment: (id: string) => void;
   handleUpdateLaporanStatus: (id: string, status: 'Diproses' | 'Selesai', tanggapan?: string) => void;
+  handleEditPost: (postId: string) => void;
+  handleEditReply: (postId: string, replyId: string) => void;
   handleSaveSecurity: (e: React.FormEvent) => void;
   handleDeleteSecurity: (id: string) => void;
   handleUpdateAbsensi: (id: string, status: 'Hadir' | 'Izin' | 'Sakit' | 'Off') => void;
@@ -374,7 +376,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     const newExp = {
       tanggal: new Date().toISOString().split('T')[0],
       nominal,
-      keterangan
+      keterangan: keterangan || 'Pengeluaran Tanpa Keterangan'
     };
     
     const { data, error } = await supabase.from('pengeluaran').insert([newExp]).select();
@@ -778,28 +780,30 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
   };
 
-  const handleEditPost = async (postId: string, content: string) => {
-    const { error } = await supabase.from('forum_posts').update({ content }).eq('id', postId);
+  const handleEditPost = async (postId: string) => {
+    const { error } = await supabase.from('forum_posts').update({ content: editingPostContent }).eq('id', postId);
     if (!error) {
-      setForumPosts(forumPosts.map(p => p.id === postId ? { ...p, content } : p));
+      setForumPosts(forumPosts.map(p => p.id === postId ? { ...p, content: editingPostContent } : p));
       setEditingPostId(null);
+      setEditingPostContent('');
       addNotification('Postingan berhasil diperbarui', 'success');
     }
   };
 
-  const handleEditReply = async (postId: string, replyId: string, content: string) => {
-    const { error } = await supabase.from('forum_replies').update({ content }).eq('id', replyId);
+  const handleEditReply = async (postId: string, replyId: string) => {
+    const { error } = await supabase.from('forum_replies').update({ content: editingReplyContent }).eq('id', replyId);
     if (!error) {
       setForumPosts(forumPosts.map(p => {
         if (p.id === postId) {
           return {
             ...p,
-            replies: p.replies?.map(r => r.id === replyId ? { ...r, content } : r)
+            replies: p.replies?.map(r => r.id === replyId ? { ...r, content: editingReplyContent } : r)
           };
         }
         return p;
       }));
       setEditingReplyId(null);
+      setEditingReplyContent('');
       addNotification('Balasan berhasil diperbarui', 'success');
     }
   };
