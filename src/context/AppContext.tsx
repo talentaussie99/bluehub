@@ -61,6 +61,8 @@ interface AppContextType {
   setBonusBills: React.Dispatch<React.SetStateAction<any[]>>;
   wargaBonusForm: any;
   setWargaBonusForm: (form: any) => void;
+  bonusForm: any;
+  setBonusForm: (form: any) => void;
   showBonusModal: boolean;
   setShowBonusModal: (show: boolean) => void;
   forumTab: 'Umum' | 'Jual-Beli';
@@ -258,6 +260,10 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     keteranganId: '',
     nominal: '',
     bukti: ''
+  });
+  const [bonusForm, setBonusForm] = useState({
+    keterangan: '',
+    nominal: ''
   });
   const [showBonusModal, setShowBonusModal] = useState(false);
 
@@ -919,6 +925,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       kasTab, setKasTab,
       bonusBills, setBonusBills,
       wargaBonusForm, setWargaBonusForm,
+      bonusForm, setBonusForm,
       showBonusModal, setShowBonusModal,
       forumTab, setForumTab,
       showForumForm, setShowForumForm,
