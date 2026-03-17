@@ -133,7 +133,7 @@ function AppContent() {
 
   return (
     <div className="h-screen bg-slate-200 flex justify-center font-sans text-slate-700 overflow-hidden">
-      <div className="w-full max-w-[1280px] bg-white shadow-2xl flex overflow-hidden h-full lg:border-x border-slate-300 relative">
+      <div className="w-full bg-white shadow-2xl flex overflow-hidden h-full relative">
         {/* Sidebar Overlay for Mobile */}
         <AnimatePresence>
           {isSidebarOpen && (
@@ -149,7 +149,7 @@ function AppContent() {
 
         {/* Sidebar */}
         <aside className={`
-          fixed lg:static inset-y-0 left-0 w-64 lg:w-52 bg-blue-900 text-white flex flex-col h-full z-50 flex-shrink-0 transition-transform duration-300 ease-in-out
+          fixed lg:static inset-y-0 left-0 w-72 lg:w-64 bg-blue-900 text-white flex flex-col h-full z-50 flex-shrink-0 transition-transform duration-300 ease-in-out
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
           <div className="p-4 flex items-center justify-between">
@@ -177,7 +177,7 @@ function AppContent() {
               <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Keuangan</p>
             </div>
             <MenuBtn icon={<Receipt size={12} />} label="IPL" active={activeMenu === 'ipl'} onClick={() => { setActiveMenu('ipl'); setIsSidebarOpen(false); }} />
-            <MenuBtn icon={<Wallet size={12} />} label="Kas & Donasi" active={activeMenu === 'kas'} onClick={() => { setActiveMenu('kas'); setIsSidebarOpen(false); }} />
+            <MenuBtn icon={<Wallet size={12} />} label="Kas" active={activeMenu === 'kas'} onClick={() => { setActiveMenu('kas'); setIsSidebarOpen(false); }} />
             
             <div className="pt-1 pb-0.5 px-2">
               <p className="text-[10px] font-bold text-blue-400 uppercase tracking-widest">Komunitas</p>

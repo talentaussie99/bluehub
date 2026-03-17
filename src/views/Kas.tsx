@@ -70,7 +70,7 @@ export const Kas: React.FC = () => {
             onClick={() => setKasTab('Bonus')}
             className={`flex-1 py-3 font-bold text-sm transition-all flex items-center justify-center gap-2 ${kasTab === 'Bonus' ? 'text-blue-900 border-b-2 border-blue-900 bg-slate-50/50' : 'text-slate-400 hover:text-slate-600'}`}
           >
-            <Gift size={16} /> Iuran Bonus / Sumbangan
+            <Gift size={16} /> Iuran Lainnya / Sumbangan
           </button>
         </div>
       </div>

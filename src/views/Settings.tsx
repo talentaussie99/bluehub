@@ -51,7 +51,7 @@ export const Settings: React.FC = () => {
       initial={{ opacity: 0, x: 10 }} 
       animate={{ opacity: 1, x: 0 }} 
       exit={{ opacity: 0, x: -10 }} 
-      className="max-w-4xl mx-auto space-y-6"
+      className="w-full space-y-6"
     >
       <div className="flex items-center gap-3 mb-2">
         <div className="p-2 bg-blue-900 text-white rounded-xl shadow-lg shadow-blue-900/20">

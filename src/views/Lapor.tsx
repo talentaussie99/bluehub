@@ -25,7 +25,7 @@ export const Lapor: React.FC = () => {
       initial={{ opacity: 0, x: 10 }} 
       animate={{ opacity: 1, x: 0 }} 
       exit={{ opacity: 0, x: -10 }} 
-      className="max-w-xl mx-auto"
+      className="w-full"
     >
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
         <div className="flex items-center gap-3 mb-4 border-b border-slate-100 pb-3">

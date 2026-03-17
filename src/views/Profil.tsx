@@ -34,7 +34,7 @@ export const Profil: React.FC = () => {
       initial={{ opacity: 0, x: 10 }} 
       animate={{ opacity: 1, x: 0 }} 
       exit={{ opacity: 0, x: -10 }} 
-      className="max-w-xl mx-auto"
+      className="w-full"
     >
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="h-24 bg-gradient-to-r from-blue-900 to-sky-700 relative">

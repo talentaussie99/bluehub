@@ -42,7 +42,7 @@ export const Forum: React.FC = () => {
       initial={{ opacity: 0, x: 10 }} 
       animate={{ opacity: 1, x: 0 }} 
       exit={{ opacity: 0, x: -10 }} 
-      className="max-w-3xl mx-auto space-y-4"
+      className="w-full space-y-4"
     >
       <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
         <div className="flex border-b border-slate-100">
