@@ -41,7 +41,11 @@ export const Kas: React.FC = () => {
     setWargaBonusForm,
     setShowBonusModal,
     currentUser,
-    handleAddPengeluaran
+    handleAddPengeluaran,
+    handleDeleteBonusBill,
+    setEditingBonus,
+    setBonusForm,
+    adminSettings
   } = useAppContext();
 
   const totalKasMasuk = payments
@@ -317,6 +321,13 @@ export const Kas: React.FC = () => {
           {userRole === 'warga' && (
             <div className="p-4 border-b border-slate-100 bg-white">
               <h4 className="font-bold text-sm mb-3">Form Pembayaran Iuran Bonus / Sumbangan</h4>
+              <div className="bg-blue-50 text-blue-800 p-3 rounded-xl border border-blue-100 text-[10px] mb-3">
+                Silakan transfer ke rekening:<br/>
+                <span className="font-mono font-bold text-xs mt-1 block">
+                  {adminSettings.bankSumbangan?.bankName} {adminSettings.bankSumbangan?.accountNumber}<br/>
+                  a.n {adminSettings.bankSumbangan?.accountHolder}
+                </span>
+              </div>
               <form className="space-y-3" onSubmit={(e) => {
                 e.preventDefault();
                 const targetBill = bonusBills.find(b => b.id === wargaBonusForm.keteranganId);
@@ -404,6 +415,69 @@ export const Kas: React.FC = () => {
               </form>
             </div>
           )}
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-slate-50 text-[10px] uppercase tracking-wider text-slate-500">
+                  <th className="px-4 py-2 font-semibold">Keterangan</th>
+                  <th className="px-4 py-2 font-semibold">Nominal</th>
+                  <th className="px-4 py-2 font-semibold">Periode</th>
+                  <th className="px-4 py-2 font-semibold text-right">Aksi</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 text-sm">
+                {bonusBills.map(bill => (
+                  <tr key={bill.id} className="hover:bg-slate-50 transition-colors">
+                    <td className="px-4 py-2">
+                      <div className="font-bold text-xs">{bill.keterangan}</div>
+                      <div className="text-[9px] text-slate-400">Dibuat: {bill.tanggalDibuat}</div>
+                    </td>
+                    <td className="px-4 py-2 text-xs font-bold">
+                      {bill.nominal ? `Rp ${bill.nominal.toLocaleString()}` : 'Seikhlasnya'}
+                    </td>
+                    <td className="px-4 py-2 text-[10px] text-slate-500">
+                      {bill.tanggalMulai || '?'} s/d {bill.tanggalSelesai || '?'}
+                    </td>
+                    <td className="px-4 py-2 text-right">
+                      <div className="flex justify-end gap-2">
+                        <button 
+                          onClick={() => {
+                            setEditingBonus(true);
+                            setBonusForm({
+                              id: bill.id,
+                              keterangan: bill.keterangan,
+                              nominal: bill.nominal?.toString() || '',
+                              tanggalMulai: bill.tanggalMulai || '',
+                              tanggalSelesai: bill.tanggalSelesai || ''
+                            });
+                            setShowBonusModal(true);
+                          }}
+                          className="text-blue-400 hover:text-blue-600 transition-colors"
+                        >
+                          <Plus size={14} className="rotate-45" /> {/* Using Plus as Edit icon placeholder or just use a real Edit icon if available */}
+                        </button>
+                        <button 
+                          onClick={() => handleDeleteBonusBill(bill.id)}
+                          className="text-red-400 hover:text-red-600 transition-colors"
+                        >
+                          <Trash2 size={14} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {bonusBills.length === 0 && (
+                  <tr>
+                    <td colSpan={4} className="px-4 py-6 text-center text-slate-400 text-xs">Belum ada daftar iuran bonus/sumbangan aktif.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+
+          <div className="p-4 border-t border-slate-100 bg-slate-50">
+            <h3 className="font-bold text-sm mb-3">Riwayat Pembayaran Iuran Bonus / Sumbangan</h3>
+          </div>
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>

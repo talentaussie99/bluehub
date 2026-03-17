@@ -143,6 +143,40 @@ export const Settings: React.FC = () => {
                   </div>
                 </div>
 
+                {/* Sumbangan Bank */}
+                <div className="mt-6 space-y-4 pt-6 border-t border-slate-100">
+                  <h4 className="text-xs font-bold text-amber-600 uppercase tracking-wider">Rekening Iuran Lainnya / Sumbangan</h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nama Bank</label>
+                      <input 
+                        type="text" 
+                        value={adminSettings.bankSumbangan?.bankName || ''}
+                        onChange={e => setAdminSettings({...adminSettings, bankSumbangan: {...adminSettings.bankSumbangan, bankName: e.target.value}})}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Nomor Rekening</label>
+                      <input 
+                        type="text" 
+                        value={adminSettings.bankSumbangan?.accountNumber || ''}
+                        onChange={e => setAdminSettings({...adminSettings, bankSumbangan: {...adminSettings.bankSumbangan, accountNumber: e.target.value}})}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm font-mono text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1">Atas Nama</label>
+                      <input 
+                        type="text" 
+                        value={adminSettings.bankSumbangan?.accountHolder || ''}
+                        onChange={e => setAdminSettings({...adminSettings, bankSumbangan: {...adminSettings.bankSumbangan, accountHolder: e.target.value}})}
+                        className="w-full px-3 py-2 bg-slate-50 border border-slate-200 rounded-xl text-sm text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none font-medium"
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 <div className="pt-4 border-t border-slate-100">
                   <button type="submit" className="w-full bg-blue-900 text-white py-3 rounded-xl font-bold hover:bg-blue-800 transition-all flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20">
                     <Save size={18} /> Simpan Perubahan Rekening

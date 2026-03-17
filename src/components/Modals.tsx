@@ -9,6 +9,7 @@ export const Modals: React.FC = () => {
     showWargaModal, setShowWargaModal, editingWarga, wargaForm, setWargaForm, handleSaveWarga,
     showPaymentModal, setShowPaymentModal, paymentType, paymentForm, setPaymentForm, handleSubmitPayment,
     showBonusModal, setShowBonusModal, bonusForm, setBonusForm, setBonusBills, bonusBills,
+    handleSaveBonusBill, editingBonus, setEditingBonus,
     showAcaraModal, setShowAcaraModal, acaraForm, setAcaraForm, handleSaveAcara,
     showSecurityModal, setShowSecurityModal, editingSecurity, securityForm, setSecurityForm, handleSaveSecurity
   } = useAppContext();
@@ -177,22 +178,14 @@ export const Modals: React.FC = () => {
               className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden"
             >
               <div className="p-3 border-b border-slate-100 flex justify-between items-center bg-slate-50">
-                <h3 className="font-bold text-base">Buat Tagihan Bonus / Sumbangan</h3>
-                <button onClick={() => setShowBonusModal(false)} className="text-slate-400 hover:text-slate-600"><XCircle size={18}/></button>
+                <h3 className="font-bold text-base">{editingBonus ? 'Edit Tagihan Bonus / Sumbangan' : 'Buat Tagihan Bonus / Sumbangan'}</h3>
+                <button onClick={() => {
+                  setShowBonusModal(false);
+                  setEditingBonus(false);
+                  setBonusForm({ id: '', keterangan: '', nominal: '', tanggalMulai: '', tanggalSelesai: '' });
+                }} className="text-slate-400 hover:text-slate-600"><XCircle size={18}/></button>
               </div>
-              <form onSubmit={(e) => {
-                e.preventDefault();
-                const newBill = {
-                  id: `b_${Date.now()}`,
-                  keterangan: bonusForm.keterangan,
-                  nominal: bonusForm.nominal ? parseInt(bonusForm.nominal) : undefined,
-                  tanggalDibuat: new Date().toISOString().split('T')[0]
-                };
-                setBonusBills([newBill, ...bonusBills]);
-                setShowBonusModal(false);
-                setBonusForm({ keterangan: '', nominal: '' });
-                alert('Tagihan bonus berhasil dibuat.');
-              }} className="p-4 space-y-3">
+              <form onSubmit={handleSaveBonusBill} className="p-4 space-y-3">
                 <div>
                   <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Keterangan / Nama Acara</label>
                   <input 
@@ -214,8 +207,32 @@ export const Modals: React.FC = () => {
                     placeholder="Contoh: 50000 (Kosongkan jika seikhlasnya)" 
                   />
                 </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Tanggal Mulai</label>
+                    <input 
+                      type="date" 
+                      value={bonusForm.tanggalMulai} 
+                      onChange={e => setBonusForm({...bonusForm, tanggalMulai: e.target.value})} 
+                      className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Tanggal Selesai</label>
+                    <input 
+                      type="date" 
+                      value={bonusForm.tanggalSelesai} 
+                      onChange={e => setBonusForm({...bonusForm, tanggalSelesai: e.target.value})} 
+                      className="w-full px-3 py-1.5 bg-slate-50 border border-slate-200 rounded-lg text-xs focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                    />
+                  </div>
+                </div>
                 <div className="pt-3 flex gap-2">
-                  <button type="button" onClick={() => setShowBonusModal(false)} className="flex-1 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-200 transition-colors">Batal</button>
+                  <button type="button" onClick={() => {
+                    setShowBonusModal(false);
+                    setEditingBonus(false);
+                    setBonusForm({ id: '', keterangan: '', nominal: '', tanggalMulai: '', tanggalSelesai: '' });
+                  }} className="flex-1 py-2 bg-slate-100 text-slate-600 font-bold rounded-xl text-xs hover:bg-slate-200 transition-colors">Batal</button>
                   <button type="submit" className="flex-1 py-2 bg-blue-900 text-white font-bold rounded-xl text-xs hover:bg-blue-800 transition-colors">Simpan Tagihan</button>
                 </div>
               </form>

@@ -13,7 +13,8 @@ import {
   AbsensiSecurity,
   AdminSettings,
   UserSettings,
-  AdministrativeSubmission
+  AdministrativeSubmission,
+  BonusBill
 } from '../types';
 
 interface AppContextType {
@@ -138,6 +139,10 @@ interface AppContextType {
   handleSubmitReply: (postId: string) => void;
   handleDeletePost: (postId: string) => void;
   handleDeleteReply: (postId: string, replyId: string) => void;
+  handleSaveBonusBill: (e: React.FormEvent) => void;
+  handleDeleteBonusBill: (id: string) => void;
+  editingBonus: boolean;
+  setEditingBonus: (editing: boolean) => void;
   laporanWargaTab: 'masuk' | 'progres' | 'selesai';
   setLaporanWargaTab: (tab: 'masuk' | 'progres' | 'selesai') => void;
   
@@ -174,73 +179,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [editingSecurity, setEditingSecurity] = useState<Security | null>(null);
   const [securityForm, setSecurityForm] = useState<any>({});
 
-  // Fetch data from Supabase on mount
-  useEffect(() => {
-    const fetchData = async () => {
-      const { data: profiles } = await supabase.from('profiles').select('*');
-      if (profiles) {
-        setWargaList(profiles.filter(p => p.role === 'warga').map(p => ({
-          id: p.id,
-          nama: p.nama,
-          noRumah: p.no_rumah,
-          noWA: p.no_wa,
-          status: p.status,
-          peran: p.peran,
-          kodeAkses: p.kode_akses,
-          foto: p.foto
-        })));
-        setSecurityList(profiles.filter(p => p.role === 'security').map(p => ({
-          id: p.id,
-          nama: p.nama,
-          noTelp: p.no_wa,
-          shift: p.shift,
-          status: p.status,
-          foto: p.foto
-        })));
-      }
-
-      const { data: p } = await supabase.from('payments').select('*').order('created_at', { ascending: false });
-      if (p) setPayments(p);
-
-      const { data: exp } = await supabase.from('pengeluaran').select('*').order('tanggal', { ascending: false });
-      if (exp) setPengeluaran(exp);
-
-      const { data: posts } = await supabase.from('forum_posts').select('*').order('created_at', { ascending: false });
-      const { data: replies } = await supabase.from('forum_replies').select('*').order('created_at', { ascending: true });
-      if (posts) {
-        const postsWithReplies = posts.map(post => ({
-          ...post,
-          author: post.author_nama || 'Warga Blue Oasis',
-          replies: replies ? replies.filter(r => r.post_id === post.id).map(r => ({
-            ...r,
-            author: r.author_nama || 'Warga Blue Oasis',
-            timestamp: new Date(r.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
-          })) : []
-        }));
-        setForumPosts(postsWithReplies);
-      }
-
-      const { data: lap } = await supabase.from('laporan').select('*').order('created_at', { ascending: false });
-      if (lap) setLaporanList(lap);
-
-      const { data: acr } = await supabase.from('acara').select('*').order('tanggal', { ascending: true });
-      if (acr) setAcaraList(acr);
-
-      const { data: notif } = await supabase.from('notifikasi').select('*').order('created_at', { ascending: false });
-      if (notif) setNotifikasiList(notif);
-
-      const { data: subs } = await supabase.from('admin_submissions').select('*').order('created_at', { ascending: false });
-      if (subs) setAdminSubmissions(subs);
-
-      const { data: settings } = await supabase.from('settings').select('*');
-      if (settings) {
-        const adminSet = settings.find(s => s.id === 'admin');
-        if (adminSet) setAdminSettings(adminSet.data);
-      }
-    };
-
-    fetchData();
-  }, []);
+  // No content needed here as it was moved
 
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentType, setPaymentType] = useState<'IPL' | 'Kas' | 'Bonus'>('IPL');
@@ -252,19 +191,15 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     bukti: ''
   });
   const [kasTab, setKasTab] = useState<'Reguler' | 'Bonus'>('Reguler');
-  const [bonusBills, setBonusBills] = useState<any[]>([
-    { id: 'b1', keterangan: 'Sumbangan 17 Agustus', tanggalDibuat: '2024-08-01' }
-  ]);
+  const [bonusBills, setBonusBills] = useState<BonusBill[]>([]);
   const [wargaBonusForm, setWargaBonusForm] = useState({
     namaWarga: '',
     keteranganId: '',
     nominal: '',
     bukti: ''
   });
-  const [bonusForm, setBonusForm] = useState({
-    keterangan: '',
-    nominal: ''
-  });
+  const [bonusForm, setBonusForm] = useState({ id: '', keterangan: '', nominal: '', tanggalMulai: '', tanggalSelesai: '' });
+  const [editingBonus, setEditingBonus] = useState(false);
   const [showBonusModal, setShowBonusModal] = useState(false);
 
   const [forumTab, setForumTab] = useState<'Umum' | 'Jual-Beli'>('Umum');
@@ -279,6 +214,94 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [editingPostContent, setEditingPostContent] = useState('');
   const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
   const [editingReplyContent, setEditingReplyContent] = useState('');
+
+  // Fetch data from Supabase on mount
+  const fetchData = async () => {
+    const { data: profiles } = await supabase.from('profiles').select('*');
+    if (profiles) {
+      setWargaList(profiles.filter(p => p.role === 'warga').map(p => ({
+        id: p.id,
+        nama: p.nama,
+        noRumah: p.no_rumah,
+        noWA: p.no_wa,
+        status: p.status,
+        peran: p.peran,
+        kodeAkses: p.kode_akses,
+        foto: p.foto
+      })));
+      setSecurityList(profiles.filter(p => p.role === 'security').map(p => ({
+        id: p.id,
+        nama: p.nama,
+        noTelp: p.no_wa,
+        shift: p.shift,
+        status: p.status,
+        foto: p.foto
+      })));
+    }
+
+    const { data: p } = await supabase.from('payments').select('*').order('created_at', { ascending: false });
+    if (p) setPayments(p);
+
+    const { data: exp } = await supabase.from('pengeluaran').select('*').order('tanggal', { ascending: false });
+    if (exp) setPengeluaran(exp);
+
+    const { data: posts } = await supabase.from('forum_posts').select('*').order('created_at', { ascending: false });
+    const { data: replies } = await supabase.from('forum_replies').select('*').order('created_at', { ascending: true });
+    if (posts) {
+      const postsWithReplies = posts.map(post => ({
+        ...post,
+        author: post.author_nama || 'Warga Blue Oasis',
+        replies: replies ? replies.filter(r => r.post_id === post.id).map(r => ({
+          ...r,
+          author: r.author_nama || 'Warga Blue Oasis',
+          timestamp: new Date(r.created_at).toLocaleString('id-ID', { day: 'numeric', month: 'short', hour: '2-digit', minute: '2-digit' })
+        })) : []
+      }));
+      setForumPosts(postsWithReplies);
+    }
+
+    const { data: lap } = await supabase.from('laporan').select('*').order('created_at', { ascending: false });
+    if (lap) setLaporanList(lap);
+
+    const { data: acr } = await supabase.from('acara').select('*').order('tanggal', { ascending: true });
+    if (acr) setAcaraList(acr);
+
+    const { data: notif } = await supabase.from('notifikasi').select('*').order('created_at', { ascending: false });
+    if (notif) setNotifikasiList(notif);
+
+    const { data: subs } = await supabase.from('admin_submissions').select('*').order('created_at', { ascending: false });
+    if (subs) setAdminSubmissions(subs);
+
+    const { data: bBills } = await supabase.from('bonus_bills').select('*').order('tanggal_dibuat', { ascending: false });
+    if (bBills) {
+      const today = new Date().toISOString().split('T')[0];
+      const activeBills = bBills.filter(b => {
+        const start = b.tanggal_mulai;
+        const end = b.tanggal_selesai;
+        if (start && today < start) return false;
+        if (end && today > end) return false;
+        return true;
+      }).map(b => ({
+        id: b.id,
+        keterangan: b.keterangan,
+        nominal: b.nominal,
+        tanggalMulai: b.tanggal_mulai,
+        tanggalSelesai: b.tanggal_selesai,
+        tanggalDibuat: b.tanggal_dibuat
+      }));
+      setBonusBills(activeBills);
+    }
+
+    const { data: settings } = await supabase.from('settings').select('*');
+    if (settings) {
+      const adminSet = settings.find(s => s.id === 'admin');
+      if (adminSet) setAdminSettings(adminSet.data);
+    }
+  };
+
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   const [editingWarga, setEditingWarga] = useState<Warga | null>(null);
   const [wargaForm, setWargaForm] = useState<any>({ 
@@ -314,6 +337,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
   const [adminSettings, setAdminSettings] = useState<AdminSettings>({
     bankIPL: { bankName: 'Bank Mandiri', accountNumber: '1234567890', accountHolder: 'Paguyuban Blue Oasis' },
     bankKas: { bankName: 'Bank BCA', accountNumber: '0987654321', accountHolder: 'Kas Blue Oasis' },
+    bankSumbangan: { bankName: 'Bank BCA', accountNumber: '1122334455', accountHolder: 'Sumbangan Blue Oasis' },
     notifications: { paymentVerification: true, newReports: true, adminGeneral: true, laporanWarga: true }
   });
 
@@ -375,6 +399,50 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
         }
         return sub;
       }));
+    }
+  };
+
+  const handleSaveBonusBill = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const billData = {
+        keterangan: bonusForm.keterangan,
+        nominal: bonusForm.nominal ? parseInt(bonusForm.nominal) : null,
+        tanggal_mulai: bonusForm.tanggalMulai || null,
+        tanggal_selesai: bonusForm.tanggalSelesai || null,
+        tanggal_dibuat: new Date().toISOString().split('T')[0]
+      };
+
+      if (editingBonus && bonusForm.id) {
+        const { error } = await supabase.from('bonus_bills').update(billData).eq('id', bonusForm.id);
+        if (error) throw error;
+        addNotification(`Tagihan ${bonusForm.keterangan} berhasil diupdate`, 'success', ['admin']);
+      } else {
+        const { error } = await supabase.from('bonus_bills').insert([billData]);
+        if (error) throw error;
+        addNotification(`Tagihan ${bonusForm.keterangan} berhasil dibuat`, 'success', ['admin']);
+      }
+
+      setShowBonusModal(false);
+      setBonusForm({ id: '', keterangan: '', nominal: '', tanggalMulai: '', tanggalSelesai: '' });
+      setEditingBonus(false);
+      fetchData();
+    } catch (error) {
+      console.error('Error saving bonus bill:', error);
+      alert('Gagal menyimpan tagihan.');
+    }
+  };
+
+  const handleDeleteBonusBill = async (id: string) => {
+    if (!confirm('Hapus tagihan ini?')) return;
+    try {
+      const { error } = await supabase.from('bonus_bills').delete().eq('id', id);
+      if (error) throw error;
+      addNotification('Tagihan berhasil dihapus', 'success', ['admin']);
+      fetchData();
+    } catch (error) {
+      console.error('Error deleting bonus bill:', error);
+      alert('Gagal menghapus tagihan.');
     }
   };
 
@@ -953,6 +1021,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       handleSubmitLaporan, handleLaporanFoto,
       showAcaraModal, setShowAcaraModal,
       handleSaveWarga, handleSubmitPayment, handleSaveAcara,
+      handleSaveBonusBill, handleDeleteBonusBill, editingBonus, setEditingBonus,
       handleVerifyPayment, handleDeletePayment, handleUpdateLaporanStatus,
       handleSaveSecurity, handleDeleteSecurity, handleUpdateAbsensi,
       handleSaveAdminSettings, handleSaveUserSettings,

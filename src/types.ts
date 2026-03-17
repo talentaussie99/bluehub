@@ -37,6 +37,8 @@ export interface BonusBill {
   keterangan: string;
   nominal?: number;
   tanggalDibuat: string;
+  tanggalMulai: string;
+  tanggalSelesai: string;
 }
 
 export interface ForumPost {
@@ -114,6 +116,11 @@ export interface AdminSettings {
     accountHolder: string;
   };
   bankKas: {
+    bankName: string;
+    accountNumber: string;
+    accountHolder: string;
+  };
+  bankSumbangan: {
     bankName: string;
     accountNumber: string;
     accountHolder: string;

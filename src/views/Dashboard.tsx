@@ -9,7 +9,8 @@ import {
   AlertCircle, 
   Calendar, 
   FileText, 
-  MessageSquare 
+  MessageSquare,
+  Gift
 } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { StatCard } from '../components/StatCard';
@@ -28,7 +29,11 @@ export const Dashboard: React.FC = () => {
     verificationQueue, 
     pendingLaporan, 
     setActiveMenu,
-    forumPosts
+    forumPosts,
+    bonusBills,
+    setKasTab,
+    wargaBonusForm,
+    setWargaBonusForm
   } = useAppContext();
 
   return (
@@ -123,6 +128,50 @@ export const Dashboard: React.FC = () => {
               icon={<TrendingUp className="text-emerald-500" />}
               color="emerald"
             />
+
+            {/* Iuran Lainnya / Sumbangan */}
+            {bonusBills.length > 0 && bonusBills.map(bill => {
+              const hasPaid = payments.some(p => p.wargaId === currentUser?.id && p.keterangan === bill.keterangan && p.status === 'Lunas');
+              const isPending = payments.some(p => p.wargaId === currentUser?.id && p.keterangan === bill.keterangan && p.status === 'Menunggu');
+
+              return (
+                <div key={bill.id} className="bg-white rounded-xl p-3 border border-slate-200 shadow-sm relative overflow-hidden group hover:shadow-md transition-all flex flex-col justify-between">
+                  <div>
+                    <div className="flex justify-between items-start mb-1.5">
+                      <div>
+                        <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider mb-0.5">{bill.keterangan}</p>
+                        <h3 className="text-xl font-black text-slate-800">{bill.nominal ? `Rp ${bill.nominal.toLocaleString()}` : 'Seikhlasnya'}</h3>
+                      </div>
+                      <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${hasPaid ? 'bg-emerald-100 text-emerald-600' : isPending ? 'bg-amber-100 text-amber-600' : 'bg-blue-100 text-blue-600'}`}>
+                        {hasPaid ? <CheckCircle2 size={14} /> : isPending ? <Clock size={14} /> : <Gift size={14} />}
+                      </div>
+                    </div>
+                    <p className={`text-xs font-medium mb-1.5 ${hasPaid ? 'text-emerald-600' : isPending ? 'text-amber-600' : 'text-blue-600'}`}>
+                      {hasPaid ? 'Sudah Dibayar' : isPending ? 'Menunggu Verifikasi' : 'Belum Dibayar'}
+                    </p>
+                    {bill.tanggalSelesai && (
+                      <p className="text-[9px] text-slate-400 mb-2">Berlaku s/d: {bill.tanggalSelesai}</p>
+                    )}
+                  </div>
+                  {!hasPaid && !isPending && (
+                    <button 
+                      onClick={() => {
+                        setKasTab('Bonus');
+                        setActiveMenu('kas');
+                        setWargaBonusForm({
+                          ...wargaBonusForm,
+                          keteranganId: bill.id,
+                          nominal: bill.nominal ? bill.nominal.toString() : ''
+                        });
+                      }}
+                      className="w-full py-1.5 bg-blue-900 text-white rounded-lg text-xs font-bold hover:bg-blue-800 transition-colors"
+                    >
+                      Bayar Sekarang
+                    </button>
+                  )}
+                </div>
+              );
+            })}
           </>
         ) : (
           <>
