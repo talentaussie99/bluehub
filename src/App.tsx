@@ -197,7 +197,7 @@ function AppContent() {
 
         {/* Sidebar */}
         <aside className={`
-          fixed lg:static inset-y-0 left-0 w-72 lg:w-64 bg-blue-900 text-white flex flex-col h-full z-50 flex-shrink-0 transition-transform duration-300 ease-in-out
+          fixed lg:static inset-y-0 left-0 w-72 lg:w-64 bg-[#1c64eb] text-white flex flex-col h-full z-50 flex-shrink-0 transition-transform duration-300 ease-in-out
           ${isSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
         `}>
           <div className="p-4 flex items-center justify-between">
@@ -259,7 +259,7 @@ function AppContent() {
             )}
 
             {userRole === 'warga' && (
-              <MenuBtn icon={<FileText size={12} />} label="Administrative" active={activeMenu === 'administrative'} onClick={() => { setActiveMenu('administrative'); setIsSidebarOpen(false); }} />
+              <MenuBtn icon={<FileText size={12} />} label="Administrasi" active={activeMenu === 'administrative'} onClick={() => { setActiveMenu('administrative'); setIsSidebarOpen(false); }} />
             )}
 
             {userRole === 'admin' && (

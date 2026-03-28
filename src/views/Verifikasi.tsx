@@ -18,6 +18,7 @@ export const Verifikasi: React.FC = () => {
     verificationQueue, 
     payments, 
     setPayments, 
+    handleVerifyPayment,
     addNotification, 
     pendingLaporan, 
     laporanList, 
@@ -80,19 +81,13 @@ export const Verifikasi: React.FC = () => {
                     </td>
                     <td className="px-4 py-2 text-right flex justify-end gap-1.5">
                       <button 
-                        onClick={() => {
-                          setPayments(payments.map(pay => pay.id === p.id ? {...pay, status: 'Lunas'} : pay));
-                          addNotification(`Pembayaran ${p.tipe} ${p.wargaNama} telah diverifikasi Lunas`, 'success', ['admin', 'warga']);
-                        }}
+                        onClick={() => handleVerifyPayment(p.id, 'Lunas')}
                         className="bg-emerald-500 text-white px-2 py-1 rounded text-[10px] font-bold hover:bg-emerald-600 transition-colors flex items-center gap-1"
                       >
                         <CheckCircle2 size={12} /> Terima
                       </button>
                       <button 
-                        onClick={() => {
-                          setPayments(payments.map(pay => pay.id === p.id ? {...pay, status: 'Ditolak'} : pay));
-                          addNotification(`Pembayaran ${p.tipe} ${p.wargaNama} ditolak`, 'warning', ['admin', 'warga']);
-                        }}
+                        onClick={() => handleVerifyPayment(p.id, 'Ditolak')}
                         className="bg-red-500 text-white px-2 py-1 rounded text-[10px] font-bold hover:bg-red-600 transition-colors flex items-center gap-1"
                       >
                         <XCircle size={12} /> Tolak

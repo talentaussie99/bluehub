@@ -240,7 +240,21 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     }
 
     const { data: p } = await supabase.from('payments').select('*').order('created_at', { ascending: false });
-    if (p) setPayments(p);
+    if (p) {
+      setPayments(p.map(pay => ({
+        id: pay.id,
+        wargaId: pay.warga_id,
+        wargaNama: pay.warga_nama,
+        bulan: pay.bulan,
+        tahun: pay.tahun,
+        nominal: pay.nominal,
+        tipe: pay.tipe,
+        status: pay.status,
+        buktiUrl: pay.bukti_url,
+        tanggalUpload: pay.tanggal_upload,
+        keterangan: pay.keterangan
+      })));
+    }
 
     const { data: exp } = await supabase.from('pengeluaran').select('*').order('tanggal', { ascending: false });
     if (exp) setPengeluaran(exp);
@@ -270,7 +284,18 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (notif) setNotifikasiList(notif);
 
     const { data: subs } = await supabase.from('admin_submissions').select('*').order('created_at', { ascending: false });
-    if (subs) setAdminSubmissions(subs);
+    if (subs) {
+      setAdminSubmissions(subs.map(sub => ({
+        id: sub.id,
+        wargaId: sub.warga_id,
+        nama: sub.nama,
+        beritaAcara: sub.berita_acara,
+        tanggal: sub.tanggal,
+        statusSurat: sub.status_surat,
+        statusPengajuan: sub.status_pengajuan,
+        createdAt: sub.created_at
+      })));
+    }
 
     // Fetch bonus bills with fallback for missing columns
     try {
@@ -385,8 +410,17 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     
     const { data, error } = await supabase.from('admin_submissions').insert([newSub]).select();
-    if (data) {
-      setAdminSubmissions([data[0], ...adminSubmissions]);
+    if (data && !error) {
+      setAdminSubmissions([{
+        id: data[0].id,
+        wargaId: data[0].warga_id,
+        nama: data[0].nama,
+        beritaAcara: data[0].berita_acara,
+        tanggal: data[0].tanggal,
+        statusSurat: data[0].status_surat,
+        statusPengajuan: data[0].status_pengajuan,
+        createdAt: data[0].created_at
+      }, ...adminSubmissions]);
       addNotification(`Pengajuan administratif baru: ${administrativeForm.beritaAcara}`, 'info', ['admin'], currentUser?.id);
       setAdministrativeForm({
         nama: currentUser?.nama || '',
@@ -403,9 +437,9 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!error) {
       setAdminSubmissions(prev => prev.map(sub => {
         if (sub.id === id) {
-          const updatedSub = { ...sub, status_pengajuan: status };
+          const updatedSub = { ...sub, statusPengajuan: status };
           addNotification(
-            `Pengajuan administratif Anda "${sub.berita_acara}" telah ${status.toLowerCase()}`,
+            `Pengajuan administratif Anda "${sub.beritaAcara}" telah ${status.toLowerCase()}`,
             status === 'Disetujui' ? 'success' : 'warning',
             ['admin'],
             currentUser?.id
@@ -635,8 +669,19 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     };
     
     const { data, error } = await supabase.from('payments').insert([newPayment]).select();
-    if (data) {
-      setPayments([data[0], ...payments]);
+    if (data && !error) {
+      setPayments([{
+        id: data[0].id,
+        wargaId: data[0].warga_id,
+        wargaNama: data[0].warga_nama,
+        bulan: data[0].bulan,
+        tahun: data[0].tahun,
+        nominal: data[0].nominal,
+        tipe: data[0].tipe,
+        status: data[0].status,
+        tanggalUpload: data[0].tanggal_upload,
+        buktiUrl: data[0].bukti_url
+      }, ...payments]);
       setShowPaymentModal(false);
       addNotification(`Bukti pembayaran ${paymentType} telah dikirim. Menunggu verifikasi admin.`, 'info', undefined, currentUser?.id);
     }
@@ -668,7 +713,7 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
     if (!error) {
       setPayments(payments.map(p => {
         if (p.id === id) {
-          addNotification(`Pembayaran ${p.tipe} Anda telah ${status === 'Lunas' ? 'diverifikasi' : 'ditolak'}`, status === 'Lunas' ? 'success' : 'warning', ['admin'], currentUser?.id);
+          addNotification(`Pembayaran ${p.tipe} Anda telah ${status === 'Lunas' ? 'diverifikasi' : 'ditolak'}`, status === 'Lunas' ? 'success' : 'warning', undefined, undefined, p.wargaId);
           return { ...p, status };
         }
         return p;
@@ -843,8 +888,26 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       setReplyingToPostId(null);
       
       const post = forumPosts.find(p => p.id === postId);
-      if (post && post.author_id !== currentUser?.id) {
-        addNotification(`${currentUser?.nama} membalas postingan Anda: "${replyContent.substring(0, 20)}..."`, 'info', undefined, currentUser?.id, post.author_id);
+      if (post) {
+        // Get all unique participants (author + people who replied)
+        const participantIds = new Set<string>();
+        if (post.author_id) participantIds.add(post.author_id);
+        post.replies?.forEach(r => {
+          if (r.author_id) participantIds.add(r.author_id);
+        });
+        
+        // Remove current user from participants so they don't notify themselves
+        participantIds.delete(currentUser?.id || '');
+
+        // Send notification to each participant
+        participantIds.forEach(participantId => {
+          const isAuthor = participantId === post.author_id;
+          const message = isAuthor 
+            ? `${currentUser?.nama} membalas postingan Anda: "${replyContent.substring(0, 20)}..."`
+            : `${currentUser?.nama} juga membalas di utas yang Anda ikuti: "${replyContent.substring(0, 20)}..."`;
+            
+          addNotification(message, 'info', undefined, currentUser?.id, participantId);
+        });
       }
     }
   };
@@ -951,14 +1014,84 @@ export const AppProvider: React.FC<{ children: React.ReactNode }> = ({ children 
       target_user_id: targetUserId
     };
     
-    const { data, error } = await supabase.from('notifikasi').insert([newNotif]).select();
+    const { error } = await supabase.from('notifikasi').insert([newNotif]);
     if (error) {
       console.error('Error adding notification:', error);
     }
-    if (data) {
-      setNotifikasiList(prev => [data[0], ...prev]);
-    }
   };
+
+  useEffect(() => {
+    if (!currentUser) return;
+
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+
+    const channel = supabase
+      .channel('public:notifikasi')
+      .on(
+        'postgres_changes',
+        { event: 'INSERT', schema: 'public', table: 'notifikasi' },
+        (payload) => {
+          const newNotif = payload.new as Notifikasi;
+          
+          const isTargetUser = newNotif.target_user_id === currentUser.id;
+          const isTargetRole = newNotif.target_role?.includes(userRole as any) || !newNotif.target_role || newNotif.target_role.length === 0;
+          const isExcluded = newNotif.exclude_user_id === currentUser.id;
+          
+          const isTarget = newNotif.target_user_id ? isTargetUser : isTargetRole;
+          
+          let shouldNotify = isTarget && !isExcluded;
+          if (userRole === 'security') {
+            shouldNotify = shouldNotify && newNotif.pesan.toLowerCase().includes('laporan');
+          }
+
+          if (shouldNotify) {
+            setNotifikasiList(prev => [newNotif, ...prev]);
+
+            if ('Notification' in window && Notification.permission === 'granted') {
+              new Notification('Blue Oasis Hub', {
+                body: newNotif.pesan,
+                icon: '/favicon.ico'
+              });
+            }
+          }
+        }
+      )
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channel);
+    };
+  }, [currentUser, userRole]);
+
+  useEffect(() => {
+    if (!currentUser || !userSettings) return;
+
+    const today = new Date();
+    const currentMonthKey = `${today.getFullYear()}-${today.getMonth() + 1}`;
+
+    if (today.getDate() === 1 && userSettings.lastBillNotificationMonth !== currentMonthKey) {
+      // It's the 1st of the month and we haven't notified the user yet
+      const notifyBill = async () => {
+        const monthNames = ["Januari", "Februari", "Maret", "April", "Mei", "Juni", "Juli", "Agustus", "September", "Oktober", "November", "Desember"];
+        const monthName = monthNames[today.getMonth()];
+        
+        await addNotification(`Tagihan IPL & Kas bulan ${monthName} telah tersedia. Silakan lakukan pembayaran.`, 'info', undefined, undefined, currentUser.id);
+        
+        // Update user settings
+        const newUserSettings = { ...userSettings, lastBillNotificationMonth: currentMonthKey };
+        setUserSettings(newUserSettings);
+        
+        await supabase.from('settings').upsert({ 
+          id: currentUser.id, 
+          data: newUserSettings 
+        });
+      };
+
+      notifyBill();
+    }
+  }, [currentUser, userSettings]);
 
   const markNotificationsAsRead = async () => {
     if (!currentUser) return;

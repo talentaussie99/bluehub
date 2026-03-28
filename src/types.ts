@@ -143,6 +143,7 @@ export interface UserSettings {
     laporanWarga: boolean;
   };
   readNotifications?: string[];
+  lastBillNotificationMonth?: string;
 }
 
 export interface AdministrativeSubmission {

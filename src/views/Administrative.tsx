@@ -61,14 +61,14 @@ export const Administrative: React.FC = () => {
         <div className="flex border-b border-slate-100">
           <button 
             onClick={() => setAdminSubTab('buat')}
-            className={`flex-1 py-3 font-bold text-[10px] transition-all flex items-center justify-center gap-2 ${adminSubTab === 'buat' ? 'text-blue-900 border-b-2 border-blue-900 bg-slate-50/50' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`flex-1 py-3 font-bold text-xs transition-all flex items-center justify-center gap-2 ${adminSubTab === 'buat' ? 'text-blue-900 border-b-2 border-blue-900 bg-slate-50/50' : 'text-slate-400 hover:text-slate-600'}`}
           >
             <Plus size={14} /> Buat Pengajuan
           </button>
           {isRT && (
             <button 
               onClick={() => setAdminSubTab('warga_submissions')}
-              className={`flex-1 py-3 font-bold text-[10px] transition-all flex items-center justify-center gap-2 ${adminSubTab === 'warga_submissions' ? 'text-blue-900 border-b-2 border-blue-900 bg-slate-50/50' : 'text-slate-400 hover:text-slate-600'}`}
+              className={`flex-1 py-3 font-bold text-xs transition-all flex items-center justify-center gap-2 ${adminSubTab === 'warga_submissions' ? 'text-blue-900 border-b-2 border-blue-900 bg-slate-50/50' : 'text-slate-400 hover:text-slate-600'}`}
             >
               <UsersIcon size={14} /> Pengajuan Warga
               {adminSubmissions.filter(s => s.statusPengajuan === 'Menunggu').length > 0 && (
@@ -80,7 +80,7 @@ export const Administrative: React.FC = () => {
           )}
           <button 
             onClick={() => setAdminSubTab('status')}
-            className={`flex-1 py-3 font-bold text-[10px] transition-all flex items-center justify-center gap-2 ${adminSubTab === 'status' ? 'text-blue-900 border-b-2 border-blue-900 bg-slate-50/50' : 'text-slate-400 hover:text-slate-600'}`}
+            className={`flex-1 py-3 font-bold text-xs transition-all flex items-center justify-center gap-2 ${adminSubTab === 'status' ? 'text-blue-900 border-b-2 border-blue-900 bg-slate-50/50' : 'text-slate-400 hover:text-slate-600'}`}
           >
             <History size={14} /> Status & Riwayat
           </button>

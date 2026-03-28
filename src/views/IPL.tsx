@@ -4,6 +4,7 @@ import { Download, Filter, CheckCircle2, Clock, Upload } from 'lucide-react';
 import { useAppContext } from '../context/AppContext';
 import { exportToPDF } from '../utils/pdfExport';
 import { Payment } from '../types';
+import { supabase } from '../lib/supabase';
 
 const MONTHS = [
   'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni', 
@@ -103,25 +104,41 @@ export const IPL: React.FC = () => {
                         {userRole === 'admin' ? (
                           <select 
                             value={status}
-                            onChange={(e) => {
+                            onChange={async (e) => {
                               const newStatus = e.target.value as any;
                               if (payment) {
-                                setPayments(payments.map(p => p.id === payment.id ? {...p, status: newStatus} : p));
-                                addNotification(`Status pembayaran IPL ${MONTHS[idx]} ${w.nama} diubah menjadi ${newStatus}`, newStatus === 'Lunas' ? 'success' : 'warning', ['admin', 'warga']);
+                                const { error } = await supabase.from('payments').update({ status: newStatus }).eq('id', payment.id);
+                                if (!error) {
+                                  setPayments(payments.map(p => p.id === payment.id ? {...p, status: newStatus} : p));
+                                  addNotification(`Status pembayaran IPL ${MONTHS[idx]} ${w.nama} diubah menjadi ${newStatus}`, newStatus === 'Lunas' ? 'success' : 'warning', ['admin'], undefined, w.id);
+                                }
                               } else if (newStatus !== 'Belum') {
-                                const newPayment: Payment = {
-                                  id: `p_${Date.now()}`,
-                                  wargaId: w.id,
-                                  wargaNama: w.nama,
+                                const newPayment = {
+                                  warga_id: w.id,
+                                  warga_nama: w.nama,
                                   bulan: idx,
                                   tahun: 2026,
                                   nominal: 75000,
                                   tipe: 'IPL',
                                   status: newStatus,
-                                  tanggalUpload: new Date().toISOString().split('T')[0]
+                                  tanggal_upload: new Date().toISOString().split('T')[0]
                                 };
-                                setPayments([...payments, newPayment]);
-                                addNotification(`Pembayaran IPL ${MONTHS[idx]} ${w.nama} dicatat sebagai ${newStatus}`, 'success', ['admin']);
+                                const { data, error } = await supabase.from('payments').insert([newPayment]).select();
+                                if (data && !error) {
+                                  setPayments([...payments, {
+                                    id: data[0].id,
+                                    wargaId: data[0].warga_id,
+                                    wargaNama: data[0].warga_nama,
+                                    bulan: data[0].bulan,
+                                    tahun: data[0].tahun,
+                                    nominal: data[0].nominal,
+                                    tipe: data[0].tipe,
+                                    status: data[0].status,
+                                    tanggalUpload: data[0].tanggal_upload,
+                                    buktiUrl: data[0].bukti_url
+                                  }]);
+                                  addNotification(`Pembayaran IPL ${MONTHS[idx]} ${w.nama} dicatat sebagai ${newStatus}`, 'success', ['admin']);
+                                }
                               }
                             }}
                             className={`text-[10px] font-bold rounded px-1 py-0.5 border-none focus:ring-1 focus:ring-blue-500 cursor-pointer ${
